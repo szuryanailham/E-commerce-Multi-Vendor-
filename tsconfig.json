@@ -3,11 +3,11 @@
   "compileOnSave": false,
   "files": [],
   "references": [
-    {
-      "path": "./apps/auth-service-e2e"
-    },
-    {
-      "path": "./apps/auth-service"
-    }
+    { "path": "./apps/auth-service-e2e" },
+    { "path": "./apps/auth-service" },
+    { "path": "./apps/api-gateways-e2e" },
+    { "path": "./apps/api-gateways" },
+    { "path": "./packages/error-handler" },
+    { "path": "./packages/prisma" }
   ]
 }

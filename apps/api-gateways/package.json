@@ -1,5 +1,5 @@
 {
-  "name": "@e-commerce-multi-vendor/auth-service",
+  "name": "@e-commerce-multi-vendor/api-gateways",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -12,15 +12,15 @@
         "defaultConfiguration": "development",
         "options": {
           "platform": "node",
-          "outputPath": "apps/auth-service/dist",
+          "outputPath": "apps/api-gateways/dist",
           "format": [
             "cjs"
           ],
           "bundle": false,
-          "main": "apps/auth-service/src/main.ts",
-          "tsConfig": "apps/auth-service/tsconfig.app.json",
+          "main": "apps/api-gateways/src/main.ts",
+          "tsConfig": "apps/api-gateways/tsconfig.app.json",
           "assets": [
-            "apps/auth-service/src/assets"
+            "apps/api-gateways/src/assets"
           ],
           "esbuildOptions": {
             "sourcemap": true,
@@ -32,7 +32,6 @@
         "configurations": {
           "development": {},
           "production": {
-            "generateLockfile": true,
             "esbuildOptions": {
               "sourcemap": false,
               "outExtension": {
@@ -49,8 +48,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/apps/auth-service/dist/package.json",
-          "{workspaceRoot}/apps/auth-service/dist/package-lock.json"
+          "{workspaceRoot}/apps/api-gateways/dist/package.json",
+          "{workspaceRoot}/apps/api-gateways/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -62,7 +61,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/apps/auth-service/dist/workspace_modules"
+          "{workspaceRoot}/apps/api-gateways/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -84,15 +83,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@e-commerce-multi-vendor/auth-service:build",
+          "buildTarget": "@e-commerce-multi-vendor/api-gateways:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@e-commerce-multi-vendor/auth-service:build:development"
+            "buildTarget": "@e-commerce-multi-vendor/api-gateways:build:development"
           },
           "production": {
-            "buildTarget": "@e-commerce-multi-vendor/auth-service:build:production"
+            "buildTarget": "@e-commerce-multi-vendor/api-gateways:build:production"
           }
         }
       },
@@ -100,20 +99,10 @@
         "options": {
           "passWithNoTests": true
         }
-      },
-      "docker:build": {
-        "dependsOn": [
-          "build",
-          "prune"
-        ]
       }
     }
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "swagger-ui-express": "^5.0.1"
-  },
-  "devDependencies": {
-    "@types/swagger-ui-express": "^4.1.8"
+    "express": "^4.21.2"
   }
 }
