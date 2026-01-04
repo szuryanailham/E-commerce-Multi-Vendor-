@@ -1,6 +1,6 @@
-# 🛒 SAAS E-Commerce Multi Vendor Platform
+# 🛒 SAAS Multi-Vendor E-Commerce Platform
 
-Sebuah **project SAAS E-Commerce Multi Vendor** yang dibangun dengan **arsitektur microservices** untuk mensimulasikan sistem e-commerce skala besar (high traffic & scalable). Project ini saya kerjakan sebagai **latihan advanced backend engineering**, system design, dan distributed system.
+A **SAAS Multi-Vendor E-Commerce** project built using **microservices architecture** to simulate a large-scale, high-traffic, and scalable e-commerce system. This project is developed as an **advanced backend engineering and system design learning project**.
 
 ---
 
@@ -10,16 +10,16 @@ Sebuah **project SAAS E-Commerce Multi Vendor** yang dibangun dengan **arsitektu
 
 - **Node.js + TypeScript**
 - **Express.js** (REST API)
-- **Nx Monorepo** (microservices management)
+- **Nx Monorepo** (Microservices management)
 - **Prisma ORM**
-- **PostgreSQL** (main database)
-- **Redis** (OTP, rate limit, caching)
-- **Apache Kafka** (event-driven communication)
-- **Docker** (containerization)
+- **PostgreSQL** (Main database)
+- **Redis** (OTP, rate limiting, caching)
+- **Apache Kafka** (Event-driven communication)
+- **Docker** (Containerization)
 
 ### Frontend
 
-- **Next.js** (planned / in progress)
+- **Next.js** (Planned / In Progress)
 
 ### Dev & Tooling
 
@@ -32,12 +32,12 @@ Sebuah **project SAAS E-Commerce Multi Vendor** yang dibangun dengan **arsitektu
 
 ## 🧩 Architecture Overview
 
-Project ini menggunakan **Microservice Architecture** dengan pendekatan:
+This project uses a **Microservices Architecture** approach with:
 
-- **API Gateway** sebagai entry point
-- Setiap service berdiri sendiri (Auth, User, Order, Product, dll)
-- Komunikasi antar service menggunakan **Kafka (event-driven)**
-- Shared packages (Prisma, Error Handler, Utils) di-manage oleh **Nx**
+- **API Gateway** as the single entry point
+- Independent services (Auth, User, Order, Product, etc.)
+- Inter-service communication via **Kafka (event-driven)**
+- Shared packages (Prisma, Error Handler, Utils) managed using **Nx**
 
 ```
 Client → API Gateway → Microservices → Database / Redis / Kafka
@@ -47,35 +47,35 @@ Client → API Gateway → Microservices → Database / Redis / Kafka
 
 ## 🔐 Auth Service (Current Focus)
 
-Fitur yang sudah / sedang dikembangkan:
+Features that have been implemented or are in progress:
 
 - User Registration
 - Email OTP Verification
-- OTP Rate Limiting (Redis)
+- OTP Rate Limiting using Redis
 - OTP Cooldown & Spam Protection
 - Centralized Error Handling
 - Swagger API Documentation
 
 ### OTP Flow
 
-1. User register
-2. Sistem cek rate limit & cooldown
-3. OTP dikirim via email
-4. OTP disimpan sementara di Redis
-5. User verifikasi OTP
+1. User registration
+2. System checks rate limits & cooldown
+3. OTP is sent via email
+4. OTP is temporarily stored in Redis
+5. User verifies OTP
 
 ---
 
-## ⚙️ Features (Ongoing)
+## ⚙️ Features Roadmap
 
 - [x] User Registration
 - [x] OTP Email Verification
-- [x] Redis Rate Limit
-- [x] Error Handler Package
+- [x] Redis Rate Limiting
+- [x] Shared Error Handler Package
 - [ ] Login & JWT Authentication
-- [ ] Role-based Access (User / Seller / Admin)
-- [ ] Product & Order Service
-- [ ] Kafka Event Handling
+- [ ] Role-Based Access Control (User / Seller / Admin)
+- [ ] Product & Order Services
+- [ ] Kafka Event Consumers
 - [ ] Payment Integration
 - [ ] Frontend Dashboard
 
@@ -83,14 +83,14 @@ Fitur yang sudah / sedang dikembangkan:
 
 ## 🧠 What I Learned
 
-Project ini melatih saya dalam:
+Through this project, I gained hands-on experience with:
 
-- Merancang **scalable backend architecture**
-- Mengelola **Nx Monorepo** untuk banyak service
-- Handling **1000+ request scenario** dengan Redis
-- Event-driven architecture dengan Kafka
-- Clean error handling & validation
-- Best practice Express + TypeScript
+- Designing **scalable backend architectures**
+- Managing **Nx Monorepo** with multiple services
+- Handling **high request throughput** using Redis
+- Implementing **event-driven architecture** with Kafka
+- Clean error handling & validation patterns
+- Best practices for Express + TypeScript
 
 ---
 
@@ -110,7 +110,7 @@ packages/
 
 ## 📄 API Documentation
 
-Swagger tersedia di masing-masing service:
+Swagger documentation is available per service:
 
 ```
 http://localhost:PORT/api-docs
@@ -123,8 +123,8 @@ http://localhost:PORT/api-docs
 **Ilham Suryana**
 Backend Developer | Fullstack Engineer
 
-> Project ini bersifat **learning & portfolio project** untuk memperdalam system design dan backend engineering.
+> This project is a **learning & portfolio project** focused on backend engineering, scalability, and system design.
 
 ---
 
-⭐ Jika project ini menarik atau bermanfaat, silakan beri star di repository ini!
+⭐ If you find this project useful or interesting, feel free to give it a star!
