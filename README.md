@@ -1,101 +1,130 @@
-# ECommerceMultiVendor
+# 🛒 SAAS E-Commerce Multi Vendor Platform
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Sebuah **project SAAS E-Commerce Multi Vendor** yang dibangun dengan **arsitektur microservices** untuk mensimulasikan sistem e-commerce skala besar (high traffic & scalable). Project ini saya kerjakan sebagai **latihan advanced backend engineering**, system design, dan distributed system.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+---
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## 🚀 Tech Stack
 
-## Run tasks
+### Backend & Infrastructure
 
-To run the dev server for your app, use:
+- **Node.js + TypeScript**
+- **Express.js** (REST API)
+- **Nx Monorepo** (microservices management)
+- **Prisma ORM**
+- **PostgreSQL** (main database)
+- **Redis** (OTP, rate limit, caching)
+- **Apache Kafka** (event-driven communication)
+- **Docker** (containerization)
 
-```sh
-npx nx serve auth-service
+### Frontend
+
+- **Next.js** (planned / in progress)
+
+### Dev & Tooling
+
+- Swagger / OpenAPI
+- JWT Authentication
+- Email Service (OTP Verification)
+- Rate Limiting & Security Middleware
+
+---
+
+## 🧩 Architecture Overview
+
+Project ini menggunakan **Microservice Architecture** dengan pendekatan:
+
+- **API Gateway** sebagai entry point
+- Setiap service berdiri sendiri (Auth, User, Order, Product, dll)
+- Komunikasi antar service menggunakan **Kafka (event-driven)**
+- Shared packages (Prisma, Error Handler, Utils) di-manage oleh **Nx**
+
+```
+Client → API Gateway → Microservices → Database / Redis / Kafka
 ```
 
-To create a production bundle:
+---
 
-```sh
-npx nx build auth-service
+## 🔐 Auth Service (Current Focus)
+
+Fitur yang sudah / sedang dikembangkan:
+
+- User Registration
+- Email OTP Verification
+- OTP Rate Limiting (Redis)
+- OTP Cooldown & Spam Protection
+- Centralized Error Handling
+- Swagger API Documentation
+
+### OTP Flow
+
+1. User register
+2. Sistem cek rate limit & cooldown
+3. OTP dikirim via email
+4. OTP disimpan sementara di Redis
+5. User verifikasi OTP
+
+---
+
+## ⚙️ Features (Ongoing)
+
+- [x] User Registration
+- [x] OTP Email Verification
+- [x] Redis Rate Limit
+- [x] Error Handler Package
+- [ ] Login & JWT Authentication
+- [ ] Role-based Access (User / Seller / Admin)
+- [ ] Product & Order Service
+- [ ] Kafka Event Handling
+- [ ] Payment Integration
+- [ ] Frontend Dashboard
+
+---
+
+## 🧠 What I Learned
+
+Project ini melatih saya dalam:
+
+- Merancang **scalable backend architecture**
+- Mengelola **Nx Monorepo** untuk banyak service
+- Handling **1000+ request scenario** dengan Redis
+- Event-driven architecture dengan Kafka
+- Clean error handling & validation
+- Best practice Express + TypeScript
+
+---
+
+## 📦 Monorepo Structure (Simplified)
+
+```
+apps/
+ ├─ api-gateway
+ ├─ auth-service
+packages/
+ ├─ prisma
+ ├─ error-handler
+ ├─ shared-utils
 ```
 
-To see all available targets to run for a project, run:
+---
 
-```sh
-npx nx show project auth-service
+## 📄 API Documentation
+
+Swagger tersedia di masing-masing service:
+
+```
+http://localhost:PORT/api-docs
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+---
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 👨‍💻 Author
 
-## Add new projects
+**Ilham Suryana**
+Backend Developer | Fullstack Engineer
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+> Project ini bersifat **learning & portfolio project** untuk memperdalam system design dan backend engineering.
 
-Use the plugin's generator to create new projects.
+---
 
-To generate a new application, use:
-
-```sh
-npx nx g @nx/node:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/node:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+⭐ Jika project ini menarik atau bermanfaat, silakan beri star di repository ini!
