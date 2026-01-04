@@ -1,24 +1,21 @@
-// src/config/swaggerOptions.ts
 import swaggerJsdoc from 'swagger-jsdoc';
 
-const options: swaggerJsdoc.Options = {
+const swaggerOptions: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Express TypeScript API with Swagger',
+      title: 'Auth Service API',
       version: '1.0.0',
-      description: 'API documentation using Swagger JSDoc',
+      description: 'Auth microservice documentation',
     },
     servers: [
       {
         url: 'http://localhost:6001',
-        description: 'Development server',
       },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/models/*.ts'], // Path to your route and model files
+
+  apis: ['apps/auth-service/src/routes/**/*.ts'],
 };
 
-const swaggerSpec = swaggerJsdoc(options);
-
-export default swaggerSpec;
+export const swaggerSpec = swaggerJsdoc(swaggerOptions);

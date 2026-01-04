@@ -1,19 +1,29 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AppError } from './index.js';
-export const errorMiddleware = (err: Error, req: Request, res: Response) => {
+
+export const errorMiddleware = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   if (err instanceof AppError) {
-    console.log(`Error ${req.method} ${req.url} - ${err.message}`);
+    console.error(
+      `[${req.method}] ${req.url} - ${err.message}`,
+      err.details ?? '',
+    );
 
     return res.status(err.statusCode).json({
-      status: 'error',
+      success: false,
       message: err.message,
-      ...(err.details && { detials: err.details }),
+      details: err.details ?? null,
     });
   }
 
-  console.log('Unhandled error', err);
+  console.error('Unhandled error:', err);
 
   return res.status(500).json({
-    error: 'somthing went wrong, please try again!',
+    success: false,
+    message: 'Something went wrong, please try again!',
   });
 };

@@ -18,13 +18,16 @@ export const userRegistration = async (
     validationRegistrationData(req.body, 'user');
     const { name, email } = req.body;
 
-    const existingUser = await prisma.users.findUnique({ where: email });
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+    });
 
     if (existingUser) {
-      return next(new ValidationError('User already exists with this email'));
+      throw new ValidationError('User already exists with this email');
     }
-    await checkOtpRestrictions(email, next);
-    await trackOtpRequests(email, next);
+
+    await checkOtpRestrictions(email);
+    await trackOtpRequests(email);
     await sendOtp(email, name, 'user-activation-mail');
 
     res.status(200).json({
