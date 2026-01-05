@@ -2,9 +2,12 @@ import express, { Router } from 'express';
 
 import {
   loginUser,
+  resetUserPassword,
+  userForgotPassword,
   userRegistration,
   verifyUser,
 } from '../controllers/auth.controller.js';
+import { verifyForgotPasswordOtp } from '../utils/auth.helper.js';
 
 const router: Router = express.Router();
 
@@ -110,5 +113,102 @@ router.post('/verify-user', verifyUser);
  *         description: Invalid credentials
  */
 router.post('/login-user', loginUser);
+
+/**
+ * @openapi
+ * /api/forgot-password-user:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Request forgot password OTP (User)
+ *     description: Send OTP to user's email for password reset
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: szuryanailham090102@gmail.com
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: User not found
+ */
+router.post('/forgot-password-user', userForgotPassword);
+
+/**
+ * @openapi
+ * /api/verify-forgot-password-user:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Verify forgot password OTP (User)
+ *     description: Verify OTP sent to user's email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: szuryanailham090102@gmail.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ */
+router.post('/verify-forgot-password-user', verifyForgotPasswordOtp);
+
+/**
+ * @openapi
+ * /api/reset-password-user:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Reset user password
+ *     description: Reset password after OTP verification
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: szuryanailham090102@gmail.com
+ *               newPassword:
+ *                 type: string
+ *                 example: newPassword123
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Validation error
+ */
+router.post('/reset-password-user', resetUserPassword);
 
 export default router;

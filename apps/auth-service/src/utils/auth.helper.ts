@@ -2,10 +2,9 @@ import crypto from 'crypto';
 import { ValidationError } from '@e-commerce-multi-vendor/error-handler';
 import redis from './redis/redis';
 import { sendEmail } from './send-email';
-import { NextFunction } from 'express';
-
+import { NextFunction, Request, Response } from 'express';
+import prisma from '@e-commerce-multi-vendor/prisma';
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /**
  * Validate registration payload
  */
@@ -123,9 +122,6 @@ export const verifyOtp = async (
   const failedAttemptsKey = `otp_attempts:${email}`;
   const failedAttempts = parseInt((await redis.get(failedAttemptsKey)) || '0');
   const StrOtp = storedOtp.toString().trim();
-  console.log('type of storeOtp', typeof StrOtp);
-  console.log('type of otp', typeof otp);
-  console.log('result', storedOtp !== otp);
 
   // 2. OTP salah
   if (StrOtp !== otp) {
@@ -153,4 +149,58 @@ export const verifyOtp = async (
 
   // 3. OTP benar → cleanup
   await redis.del(`otp:${email}`, failedAttemptsKey, `otp_lock:${email}`);
+};
+
+// user forgot password
+export const handleForgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  userType: 'user' | 'seller',
+) => {
+  try {
+    const { email } = req.body;
+    if (!email) throw new ValidationError('email is required');
+
+    // Find user/seller in DB
+
+    const user =
+      userType === 'user' &&
+      (await prisma.users.findUnique({
+        where: { email },
+      }));
+
+    if (!user) throw new ValidationError(`${userType} not found`);
+
+    // cek otp restrictions
+    await checkOtpRestrictions(email);
+    await trackOtpRequests(email);
+
+    // Generate OTP send email
+    await sendOtp(email, user.name, 'forgot-password-user-mail');
+
+    res.status(200).json({
+      message: 'OTP sent to email , Please verify your account!',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyForgotPasswordOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp)
+      throw new ValidationError('Email and OTP are required!');
+    await verifyOtp(email, otp, next);
+    res.status(200).json({
+      message: 'OTP verified, You can now reset your password. ',
+    });
+  } catch (error) {
+    next(error);
+  }
 };

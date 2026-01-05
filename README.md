@@ -12,7 +12,7 @@ A **SAAS Multi-Vendor E-Commerce** project built using **microservices architect
 - **Express.js** (REST API)
 - **Nx Monorepo** (Microservices management)
 - **Prisma ORM**
-- **PostgreSQL** (Main database)
+- **MONGGO DB** (Main database)
 - **Redis** (OTP, rate limiting, caching)
 - **Apache Kafka** (Event-driven communication)
 - **Docker** (Containerization)
@@ -72,7 +72,7 @@ Features that have been implemented or are in progress:
 - [x] OTP Email Verification
 - [x] Redis Rate Limiting
 - [x] Shared Error Handler Package
-- [ ] Login & JWT Authentication
+- [x] Login & JWT Authentication
 - [ ] Role-Based Access Control (User / Seller / Admin)
 - [ ] Product & Order Services
 - [ ] Kafka Event Consumers
