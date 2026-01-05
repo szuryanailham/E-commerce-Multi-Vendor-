@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { ValidationError } from '@e-commerce-multi-vendor/error-handler';
 import redis from './redis/redis';
 import { sendEmail } from './send-email';
+import { NextFunction } from 'express';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -95,4 +96,61 @@ export const sendOtp = async (
   await redis.set<string>(`otp_cooldown:${email}`, 'true', {
     ex: 60, // 1 minute
   });
+};
+
+/**
+ * Verify OTP
+ */
+
+export const verifyOtp = async (
+  email: string,
+  otp: string,
+  next: NextFunction,
+) => {
+  // 1. Cek lock dulu
+  const isLocked = await redis.get(`otp_lock:${email}`);
+  if (isLocked) {
+    throw new ValidationError(
+      'Your account is locked. Please try again later.',
+    );
+  }
+
+  const storedOtp = await redis.get(`otp:${email}`);
+  if (!storedOtp) {
+    throw new ValidationError('Invalid or expired OTP!');
+  }
+
+  const failedAttemptsKey = `otp_attempts:${email}`;
+  const failedAttempts = parseInt((await redis.get(failedAttemptsKey)) || '0');
+  const StrOtp = storedOtp.toString().trim();
+  console.log('type of storeOtp', typeof StrOtp);
+  console.log('type of otp', typeof otp);
+  console.log('result', storedOtp !== otp);
+
+  // 2. OTP salah
+  if (StrOtp !== otp) {
+    const attempts = failedAttempts + 1;
+
+    // Lock di percobaan ke-3
+    if (attempts >= 3) {
+      await redis.set(`otp_lock:${email}`, 'locked', {
+        ex: 1800, // 30 menit
+      });
+
+      await redis.del(`otp:${email}`, failedAttemptsKey);
+
+      throw new ValidationError(
+        'Too many failed attempts. Your account is locked for 30 minutes!',
+      );
+    }
+
+    await redis.set(failedAttemptsKey, attempts, {
+      ex: 300, // 5 menit
+    });
+
+    throw new ValidationError(`Incorrect OTP, ${3 - attempts} attempts left`);
+  }
+
+  // 3. OTP benar → cleanup
+  await redis.del(`otp:${email}`, failedAttemptsKey, `otp_lock:${email}`);
 };

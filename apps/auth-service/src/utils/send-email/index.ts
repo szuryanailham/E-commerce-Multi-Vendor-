@@ -21,6 +21,7 @@ const renderEmailTemplate = async (
 ): Promise<string> => {
   const templatePath = path.join(
     process.cwd(),
+    'apps',
     'auth-service',
     'src',
     'utils',
@@ -36,18 +37,13 @@ export const sendEmail = async (
   subject: string,
   templateName: string,
   data: Record<string, any>,
-) => {
-  try {
-    const html = await renderEmailTemplate(templateName, data);
-    await transporter.sendMail({
-      from: `<${process.env.SMTP_USER}`,
-      to,
-      subject,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.log('Error sending email', error);
-    return false;
-  }
+): Promise<void> => {
+  const html = await renderEmailTemplate(templateName, data);
+
+  await transporter.sendMail({
+    from: `"Auth Service" <${process.env.SMTP_USER}>`,
+    to,
+    subject,
+    html,
+  });
 };

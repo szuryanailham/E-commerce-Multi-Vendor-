@@ -44,3 +44,10 @@ Thumbs.db
 test-output
 
 /generated/prisma
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
