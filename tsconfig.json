@@ -20,6 +20,9 @@
     },
     {
       "path": "./packages/prisma"
+    },
+    {
+      "path": "./apps/user-ui"
     }
   ]
 }
