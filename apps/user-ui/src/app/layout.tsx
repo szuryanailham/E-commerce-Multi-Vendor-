@@ -1,4 +1,5 @@
 import './global.css';
+import Providers from './providers';
 import Header from './shared/widgets';
 import { Poppins, Roboto } from 'next/font/google';
 export const metadata = {
@@ -26,8 +27,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${poppins.variable}`}>
-        <Header />
-        {children}
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

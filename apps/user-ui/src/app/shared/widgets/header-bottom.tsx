@@ -9,7 +9,6 @@ import ProfileIcon from '@/app/assets/svgs/profile-icon';
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => {
       setIsSticky(window.scrollY > 100);

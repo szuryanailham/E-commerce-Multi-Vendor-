@@ -1,13 +1,17 @@
 import express, { Router } from 'express';
 
 import {
+  getUser,
   loginUser,
+  refreshToken,
   resetUserPassword,
   userForgotPassword,
   userRegistration,
   verifyUser,
+  verifyUserForgotPassword,
 } from '../controllers/auth.controller.js';
-import { verifyForgotPasswordOtp } from '../utils/auth.helper.js';
+
+import isAuthenicated from '@e-commerce-multi-vendor/middleware';
 
 const router: Router = express.Router();
 
@@ -143,6 +147,7 @@ router.post('/login-user', loginUser);
  *       404:
  *         description: User not found
  */
+router.get('/logged-in-user', isAuthenicated, getUser);
 router.post('/forgot-password-user', userForgotPassword);
 
 /**
@@ -176,7 +181,7 @@ router.post('/forgot-password-user', userForgotPassword);
  *       400:
  *         description: Invalid or expired OTP
  */
-router.post('/verify-forgot-password-user', verifyForgotPasswordOtp);
+router.post('/verify-forgot-password-user', verifyUserForgotPassword);
 
 /**
  * @openapi
@@ -210,5 +215,6 @@ router.post('/verify-forgot-password-user', verifyForgotPasswordOtp);
  *         description: Validation error
  */
 router.post('/reset-password-user', resetUserPassword);
+router.post('/refresh-token-user', refreshToken);
 
 export default router;

@@ -6,6 +6,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import GoogleLoginButton from '@/app/shared/components/google-button';
 import { Eye, EyeOff } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import axios, { AxiosError } from 'axios';
 type FormData = {
   email: string;
   password: string;
@@ -15,19 +17,35 @@ const Login = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
-
-  const router = useRouter(); // ✅ sekarang aman
-
+  const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
 
+  const loginMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/login-user`,
+        data,
+        { withCredentials: true },
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setServerError(null);
+      router.push('/');
+    },
+    onError: (error: AxiosError<{ message?: string }>) => {
+      const errorMessage =
+        error.response?.data?.message ?? 'Invalid credentials';
+      setServerError(errorMessage);
+    },
+  });
+
   const onSubmit = async (data: FormData) => {
-    console.log(data);
-    // contoh redirect
-    // router.push('/');
+    loginMutation.mutate(data);
   };
 
   return (
@@ -123,16 +141,17 @@ const Login = () => {
                 />
                 Remember me
               </label>
-              <Link href={'/forget-password'} className="text-blue-500 text-sm">
+              <Link href={'/forgot-password'} className="text-blue-500 text-sm">
                 Forgot Password?
               </Link>
             </div>
 
             <button
               type="submit"
+              disabled={loginMutation.isPending}
               className="w-full text-lg cursor-pointer bg-black text-white py-2 rounded-lg"
             >
-              Login
+              {loginMutation?.isPending ? 'Login in ...' : 'Login'}
             </button>
             {serverError && (
               <p className="text-red-500 text-sm mt-2">{serverError}</p>

@@ -1,9 +1,12 @@
+'use client';
 import React from 'react';
 import Link from 'next/link';
 import { Search, HeartIcon, ShoppingCart } from 'lucide-react';
 import ProfileIcon from '@/app/assets/svgs/profile-icon';
 import HeaderBottom from './header-bottom';
+import useUser from '@/hooks/useUser';
 const Header = () => {
+  const { user, isLoading } = useUser();
   return (
     <div className="w-full bg-white">
       <div className="w-[80%] py-5 m-auto flex items-center justify-between gap-6">
@@ -26,11 +29,31 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-8">
-          <Link href="/login" className="flex items-center gap-2">
-            <ProfileIcon className="w-6 h-6 text-gray-700" />
-            <span className="font-medium">Hello,</span>
-            <span className="font-semibold">Sign in</span>
-          </Link>
+          {!isLoading && user ? (
+            <Link href="/profile" className="flex items-center gap-2">
+              <ProfileIcon className="w-6 h-6 text-gray-700" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">
+                  Hello,
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {user.name}
+                </span>
+              </div>
+            </Link>
+          ) : (
+            <Link href="/login" className="flex items-center gap-2">
+              <ProfileIcon className="w-6 h-6 text-gray-700" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">
+                  Hello,
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  Sign in
+                </span>
+              </div>
+            </Link>
+          )}
 
           {/* Wishlist + Cart */}
           <div className="flex items-center gap-5">
