@@ -14,22 +14,93 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model images {
-    id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  file_id  String
-  url      String
-  userID   String? @db.ObjectId @unique
-  users    users?  @relation(fields: [userID], references: [id])
-}
-
 model users {
-    id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
   password  String?
   following String[]
-  avatar    images?
+
+  avatar images?
+  reviews shopReviews[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("users")     // ⬅️ KUNCI KE COLLECTION users
 }
 
+model sellers {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String @unique
+  phone_number String
+  country      String
+  password     String
+  stripeId     String?
+
+  shop shops?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sellers")   // ⬅️ KUNCI KE COLLECTION sellers
+}
+
+model shops {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  bio      String?
+  category String
+
+  avatar images?
+
+  coverBanner  String?
+  address      String
+  openingHours String?
+  website      String?
+  socialLinks  Json[]
+
+  ratings Float @default(0)
+  reviews shopReviews[]
+
+  sellerId String @unique @db.ObjectId
+  seller   sellers @relation(fields: [sellerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shops")
+}
+
+model images {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  fileId String
+  url    String
+
+  userId String? @db.ObjectId @unique
+  shopId String? @db.ObjectId @unique
+
+  user users? @relation(fields: [userId], references: [id])
+  shop shops? @relation(fields: [shopId], references: [id])
+
+  @@map("images")
+}
+
+model shopReviews {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+  shopId String @db.ObjectId
+
+  rating Float
+  review String?
+
+  user users @relation(fields: [userId], references: [id])
+  shop shops @relation(fields: [shopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shopReviews")
+}
