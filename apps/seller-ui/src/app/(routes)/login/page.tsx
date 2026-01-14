@@ -48,7 +48,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-[85vh] bg-[rgb(241,241,241)] py-10">
+    <div className="w-full min-h-screen bg-[rgb(241,241,241)] py-10">
       {/* Title */}
       <h1 className="text-4xl font-semibold text-black text-center">Login</h1>
 

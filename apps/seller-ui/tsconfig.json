@@ -43,5 +43,6 @@
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     ".next"
-  ]
+  ],
+  "references": []
 }

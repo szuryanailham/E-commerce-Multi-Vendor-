@@ -24,7 +24,7 @@ export const Header = styled.div`
 
   /* posisi */
   display: flex;
-  align-items: center; /* vertical center */
+  align-items: center;
   justify-content: flex-start; /* kiri */
 
   /* pastikan full width sidebar */

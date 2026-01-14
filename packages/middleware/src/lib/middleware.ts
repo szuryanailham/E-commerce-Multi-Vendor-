@@ -19,7 +19,7 @@ export const isAuthenticated = async (
         message: 'Unauthorized! Token missing.',
       });
     }
-    // verify access token
+
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
       id: string;
       role: 'user' | 'seller';

@@ -223,11 +223,12 @@ router.post('/verify-forgot-password-user', verifyUserForgotPassword);
  */
 router.post('/reset-password-user', resetUserPassword);
 router.post('/refresh-token', refreshToken);
+router.get('/logged-in-user', isAuthenicated, getUser);
 router.post('/seller-registration', sellerRegistration);
 router.post('/verify-seller', verifySeller);
 router.post('/create-shop', createShop);
 router.post('/create-stripe-link', createStripConnectLink);
 router.post('/create-acount-number', updateAccountNumber);
 router.post('/login-seller', loginSeller);
-router.post('/logged-in-seller', isAuthenicated, isSeller, getSeller);
+router.get('/logged-in-seller', isAuthenicated, isSeller, getSeller);
 export default router;

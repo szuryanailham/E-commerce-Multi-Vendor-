@@ -10,7 +10,6 @@ import { countries } from '@/utils/country';
 import CreateShop from '@/shared/modules/auth/create-shop';
 import StripeLogo from '@/assets/svgs/stripe-logo';
 import { bankNames } from '@/utils/bank';
-import { useRouter } from 'next/navigation';
 
 const Signup = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
@@ -28,7 +27,6 @@ const Signup = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const router = useRouter();
 
   const startResendTimer = () => {
     const interval = setInterval(() => {

@@ -116,6 +116,9 @@ export const loginUser = async (
       return next(new AuthError('Invalid email or password'));
     }
 
+    res.clearCookie('seller-access-token');
+    res.clearCookie('seller-refresh-token');
+
     // Generate access and refresh token
     const accessToken = jwt.sign(
       { id: user.id, role: 'user' },

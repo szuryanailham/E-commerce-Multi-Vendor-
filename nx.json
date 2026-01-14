@@ -61,6 +61,16 @@
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
       }
+    },
+    {
+      "plugin": "@nx/js/typescript",
+      "include": ["packages/components/*"],
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        }
+      },
+      "exclude": ["packages/components/*"]
     }
   ],
   "targetDefaults": {
@@ -78,6 +88,11 @@
       "application": {
         "style": "tailwind",
         "linter": "none"
+      }
+    },
+    "@nx/react": {
+      "library": {
+        "unitTestRunner": "none"
       }
     }
   }
