@@ -38,6 +38,8 @@ model sellers {
   country      String
   password     String
   stripeId     String?
+  account_number String?
+  bank          String?
 
   shop shops?
 

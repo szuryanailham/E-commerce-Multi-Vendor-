@@ -1,32 +1,34 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
-import { error } from 'console';
 import { countries } from '@/utils/country';
-import { sign } from 'jsonwebtoken';
+import CreateShop from '@/shared/modules/auth/create-shop';
+import StripeLogo from '@/assets/svgs/stripe-logo';
+import { bankNames } from '@/utils/bank';
+import { useRouter } from 'next/navigation';
 
 const Signup = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [showOtp, setShowOtp] = useState(false);
   const [canResend, setCanResend] = useState(true);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
   const [otp, setOtp] = useState(['', '', '', '']);
   const [sellerData, setSellerData] = useState<FormData | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const router = useRouter();
   const [sellerId, setSellerId] = useState('');
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const router = useRouter();
 
   const startResendTimer = () => {
     const interval = setInterval(() => {
@@ -40,6 +42,20 @@ const Signup = () => {
       });
     }, 1000);
   };
+
+  const accountNumberMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/create-acount-number`,
+        data,
+      );
+      return response.data;
+    },
+    onSuccess: (res) => {
+      setServerError(null);
+      window.location.href = res.refresh_url;
+    },
+  });
 
   const signUpMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -74,13 +90,18 @@ const Signup = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      setSellerData(data?.seller?.id);
+      setSellerId(data?.seller?.id);
       setActiveStep(2);
     },
   });
 
   const onSubmit = async (data: any) => {
     signUpMutation.mutate(data);
+  };
+
+  const onSubmitNumberAccount = async (data: any) => {
+    const AccountNumberData = { ...data, sellerId };
+    accountNumberMutation.mutate(AccountNumberData);
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -119,6 +140,21 @@ const Signup = () => {
   const resendOtp = () => {
     if (sellerData) {
       signUpMutation.mutate(sellerData);
+    }
+  };
+
+  const connectStripe = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/create-stripe-link`,
+        { sellerId },
+      );
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Stripe Connection Error :', error);
     }
   };
 
@@ -363,6 +399,101 @@ const Signup = () => {
               </div>
             )}
           </>
+        )}
+        {activeStep === 2 && (
+          <CreateShop sellerId={sellerId} setActiveStep={setActiveStep} />
+        )}
+        {activeStep === 3 && (
+          <div>
+            <h3 className="text-2xl font-semibold text-center">
+              Withdraw Method
+            </h3>
+            <br />
+            <button
+              onClick={connectStripe}
+              className="w-full m-auto flex items-center text-white justify-center text-md
+               bg-[#334155] text-while py-2 rounded-lg"
+            >
+              Connect Stripe <StripeLogo width={100} height={32} />
+            </button>
+            <div className="flex items-center my-5 text-gray-400 text-sm">
+              <div className="flex-1 border-t border-gray-300" />
+              <span className="px-3">Or with Account Number</span>
+              <div className="flex-1 border-t border-gray-300" />
+            </div>
+            <form onSubmit={handleSubmit(onSubmitNumberAccount)}>
+              <div>
+                <label className="block text-gray-700 mb-1">Bank *</label>
+                <select
+                  className="w-full p-2 border border-gray-300 outline-0 rounded-[4px] mb-1 bg-white"
+                  {...register('bank', {
+                    required: 'Bank is required',
+                  })}
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Select your bank
+                  </option>
+
+                  {bankNames.map((bank) => (
+                    <option key={bank.name} value={bank.name}>
+                      {bank.name}
+                    </option>
+                  ))}
+                </select>
+
+                {errors.bank && (
+                  <p className="text-red-500 text-sm">
+                    {String(errors.bank.message)}
+                  </p>
+                )}
+              </div>
+
+              {/* Input Account Number */}
+
+              <div>
+                <label className="block text-gray-700 mb-1">
+                  Account Number
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="e.g. 1234567890"
+                  className="w-full p-2 border border-gray-300 !rounded outline-none"
+                  {...register('account_number', {
+                    required: 'Account number is required',
+                    pattern: {
+                      value: /^[0-9]+$/,
+                      message: 'Account number must contain only numbers',
+                    },
+                    minLength: {
+                      value: 8,
+                      message: 'Account number must be at least 8 digits',
+                    },
+                    maxLength: {
+                      value: 20,
+                      message: 'Account number must be at most 20 digits',
+                    },
+                  })}
+                />
+
+                {errors.account_number && (
+                  <p className="text-red-500 text-sm">
+                    {String(errors.account_number.message)}
+                  </p>
+                )}
+              </div>
+
+              {/* Button Submit */}
+              <button
+                type="submit"
+                disabled={accountNumberMutation.isPending}
+                className="w-full text-lg bg-black text-white py-2 rounded-lg"
+              >
+                {accountNumberMutation.isPending ? 'connecting...' : 'Connect'}
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </div>

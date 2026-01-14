@@ -21,6 +21,7 @@
     "express-http-proxy": "^2.1.2",
     "express-rate-limit": "^8.2.1",
     "ioredis": "^5.8.2",
+    "jotai": "^2.16.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.562.0",
     "morgan": "^1.10.1",
@@ -30,6 +31,8 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.70.0",
     "react-hot-toast": "^2.6.0",
+    "stripe": "^20.1.2",
+    "styled-components": "^6.3.6",
     "swagger-autogen": "^2.23.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"

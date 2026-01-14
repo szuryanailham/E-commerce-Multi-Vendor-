@@ -13,6 +13,9 @@
   "references": [
     {
       "path": "../prisma/tsconfig.lib.json"
+    },
+    {
+      "path": "../error-handler/tsconfig.lib.json"
     }
   ]
 }

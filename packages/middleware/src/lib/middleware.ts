@@ -9,7 +9,10 @@ export const isAuthenticated = async (
 ) => {
   try {
     const token =
-      req.cookies?.access_token || req.headers.authorization?.split(' ')[1];
+      req.cookies['access-token'] ||
+      req.cookies['seller-access-token'] ||
+      req.headers.authorization?.split(' ')[1];
+
     if (!token) {
       console.log('❌ TOKEN NOT FOUND');
       return res.status(401).json({
@@ -22,10 +25,20 @@ export const isAuthenticated = async (
       role: 'user' | 'seller';
     };
 
-    // find user by id
-    const account = await prismaClient.users.findUnique({
-      where: { id: decoded.id },
-    });
+    let account;
+
+    if (decoded.role == 'user') {
+      account = await prismaClient.users.findUnique({
+        where: { id: decoded.id },
+      });
+      req.user = account;
+    } else if (decoded.role == 'seller') {
+      account = await prismaClient.sellers.findUnique({
+        where: { id: decoded.id },
+        include: { shop: true },
+      });
+      req.seller = account;
+    }
 
     if (!account) {
       console.log('❌ USER NOT FOUND');
@@ -33,7 +46,7 @@ export const isAuthenticated = async (
         message: 'Unauthorized! User not found.',
       });
     }
-    req.user = account;
+    req.user = decoded.role;
     return next();
   } catch (error) {
     console.error('AUTH ERROR:', error);

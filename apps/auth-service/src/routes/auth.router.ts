@@ -2,18 +2,22 @@ import express, { Router } from 'express';
 
 import {
   createShop,
+  createStripConnectLink,
+  getSeller,
   getUser,
+  loginSeller,
   loginUser,
   refreshToken,
   resetUserPassword,
   sellerRegistration,
+  updateAccountNumber,
   userForgotPassword,
   userRegistration,
   verifySeller,
   verifyUser,
   verifyUserForgotPassword,
 } from '../controllers/auth.controller.js';
-
+import isSeller from '@e-commerce-multi-vendor/middleware';
 import isAuthenicated from '@e-commerce-multi-vendor/middleware';
 
 const router: Router = express.Router();
@@ -218,8 +222,12 @@ router.post('/verify-forgot-password-user', verifyUserForgotPassword);
  *         description: Validation error
  */
 router.post('/reset-password-user', resetUserPassword);
-router.post('/refresh-token-user', refreshToken);
+router.post('/refresh-token', refreshToken);
 router.post('/seller-registration', sellerRegistration);
 router.post('/verify-seller', verifySeller);
 router.post('/create-shop', createShop);
+router.post('/create-stripe-link', createStripConnectLink);
+router.post('/create-acount-number', updateAccountNumber);
+router.post('/login-seller', loginSeller);
+router.post('/logged-in-seller', isAuthenicated, isSeller, getSeller);
 export default router;
