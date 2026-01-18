@@ -1,13 +1,14 @@
 'use client';
 import ImagePlaceHolder from '@/shared/components/image-placeholder';
 import { ChevronsRight } from 'lucide-react';
-// import { CostumSpecifications } from '@e-commerce-multi-vendor/components';
+import CostumSpecifications from '@/shared/components/components-ui/costum-specifications';
 // import CostumSpecifications from '@e-commerce-multi-vendor/components/costum-specifications';
 // import CostumProperties from '@e-commerce-multi-vendor/components/costum-properties';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Input from '@/shared/components/components-ui/Input';
-// import ColorSelector from '@e-commerce-multi-vendor/';
+import ColorSelector from '@/shared/components/components-ui/color-selector';
+import CostumProperties from '@/shared/components/components-ui/costum-properties';
 const Page = () => {
   const {
     register,
@@ -242,7 +243,7 @@ const Page = () => {
               </div>
 
               {/* Color selector */}
-              {/* <div className="mt-2">
+              <div className="mt-2">
                 <ColorSelector control={control} errors={errors} />
               </div>
 
@@ -252,7 +253,7 @@ const Page = () => {
 
               <div className="mt-2">
                 <CostumProperties control={control} errors={errors} />
-              </div> */}
+              </div>
 
               <div className="mt-2">
                 <label className="block font-semibold text-gray-300 mb-1">
