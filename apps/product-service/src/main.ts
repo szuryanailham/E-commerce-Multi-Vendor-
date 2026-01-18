@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { errorMiddleware } from '@e-commerce-multi-vendor/error-handler';
 import cookieParser from 'cookie-parser';
-// import swaggerUi from 'swagger-ui-express';
-
+import router from './routes/product.routes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swaggerOptions';
 const port = process.env.PORT ? Number(process.env.PORT) : 6002;
 
 const app = express();
@@ -20,15 +21,14 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-  res.send({ message: 'Hello API' });
+  res.send({ message: 'Hello Product API' });
 });
 
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// app.get('/docs-json', (req, res) => {
-//   res.json(swaggerSpec);
-// });
-// Routes
-// app.use('/api', router);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/docs-json', (req, res) => {
+  res.json(swaggerSpec);
+});
+app.use('/api', router);
 
 const server = app.listen(port, () => {
   console.log(`Auth service is running at http://localhost:${port}/api`);
