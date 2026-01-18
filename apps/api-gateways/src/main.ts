@@ -6,6 +6,7 @@ import proxy from 'express-http-proxy';
 import morgan from 'morgan';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import cookieParse from 'cookie-parser';
+import initializeConfig from './libs/initializeSiteConfig';
 
 const app = express();
 app.use(
@@ -38,4 +39,10 @@ app.use('/', proxy('http://localhost:6001'));
 
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);
+  try {
+    initializeConfig();
+    console.log('Site config initialized successfully');
+  } catch (error) {
+    console.log('Failed to initialize site config', error);
+  }
 });

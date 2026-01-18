@@ -3,16 +3,15 @@ import { forwardRef } from 'react';
 interface BaseProps {
   label?: string;
   type?: 'text' | 'number' | 'password' | 'email' | 'textarea';
-  className?: string;
 }
 
-type InputProps = BaseProps & React.InputHTMLAttributes<HTMLInputElement>;
 type TextareaProps = BaseProps &
   React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+type InputProps = BaseProps & React.InputHTMLAttributes<HTMLInputElement>;
 type Props = InputProps | TextareaProps;
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
-  ({ label, type = 'text', className = '', ...props }, ref) => {
+  ({ label, type = 'text', className, ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (

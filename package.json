@@ -91,6 +91,7 @@
     "prisma",
     "packages",
     "swagger",
-    "shared"
+    "shared",
+    "package/*"
   ]
 }
