@@ -1,19 +1,16 @@
 'use client';
 import ImagePlaceHolder from '@/shared/components/image-placeholder';
 import { ChevronsRight } from 'lucide-react';
-import CostumSpecifications from '@/shared/components/components-ui/costum-specifications';
-// import CostumSpecifications from '@e-commerce-multi-vendor/components/costum-specifications';
-// import CostumProperties from '@e-commerce-multi-vendor/components/costum-properties';
+import CostumSpecifications from '@e-commerce-multi-vendor/components/costum-specifications';
+import CostumProperties from '@e-commerce-multi-vendor/components/costum-properties';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import Input from '@/shared/components/components-ui/Input';
+import Input from '@e-commerce-multi-vendor/components/Input';
 import ColorSelector from '@/shared/components/components-ui/color-selector';
-import CostumProperties from '@/shared/components/components-ui/costum-properties';
 const Page = () => {
   const {
     register,
     control,
-    watch,
     setValue,
     handleSubmit,
     formState: { errors },
