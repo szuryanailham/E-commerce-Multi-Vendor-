@@ -1,26 +1,29 @@
 'use client';
 import ImagePlaceHolder from '@/shared/components/image-placeholder';
 import { ChevronsRight } from 'lucide-react';
-import CostumSpecifications from '@e-commerce-multi-vendor/components/costum-specifications';
-import CostumProperties from '@e-commerce-multi-vendor/components/costum-properties';
+import CostumSpecifications from '@/shared/components/components-ui/costum-specifications';
+import CostumProperties from '@/shared/components/components-ui/costum-properties';
 import React, { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import Input from '@e-commerce-multi-vendor/components/Input';
+import Input from '@/shared/components/components-ui/Input';
 import ColorSelector from '@/shared/components/components-ui/color-selector';
+import RichTextEditor from '@/shared/components/components-ui/rich-text-editor';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
+import SizeSelector from '@/shared/components/components-ui/size-selector';
 const Page = () => {
   const {
     register,
     control,
     setValue,
     watch,
+    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
   const [openImageModal, setOpenImageModal] = useState(false);
-  const [isChanged, setIsChanged] = useState(false);
+  const [isChanged, setIsChanged] = useState(true);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
   const { data, isLoading, isError } = useQuery({
@@ -80,6 +83,10 @@ const Page = () => {
       setValue('images', updatedImages);
       return updatedImages;
     });
+  };
+
+  const handleSaveDraft = () => {
+    console.log('Save draft clicked');
   };
 
   return (
@@ -433,7 +440,175 @@ const Page = () => {
               </div>
 
               {/* Detail description */}
+              <div className="mt-2 mb-6">
+                <Controller
+                  name="detailed_description"
+                  control={control}
+                  rules={{
+                    required: 'Detailed description is required',
+                    validate: (value) => {
+                      const wordCount = value
+                        .replace(/<[^>]+>/g, '')
+                        .trim()
+                        .split(/\s+/).length;
+
+                      return (
+                        wordCount >= 100 ||
+                        `Detailed description must be at least 100 words (Current: ${wordCount})`
+                      );
+                    },
+                  }}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      content={field.value}
+                      onContentChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="mt-2">
+                <Input
+                  type="text"
+                  label="Embed URL"
+                  placeholder="Enter YouTube embed URL"
+                  {...register('embed_url', {
+                    validate: (value) => {
+                      if (!value) return true;
+                      const youtubeRegex =
+                        /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[\w-]{11}(\S*)?$/;
+
+                      return (
+                        youtubeRegex.test(value) ||
+                        'URL harus berasal dari YouTube (embed / watch / youtu.be)'
+                      );
+                    },
+                  })}
+                />
+              </div>
+              {/* Regular price */}
+              {/* REGULAR PRICE */}
+              <div className="mt-2">
+                <Input
+                  type="number"
+                  label="Regular Price *"
+                  placeholder="Enter regular price"
+                  min={0}
+                  step="0.01"
+                  {...register('regular_price', {
+                    required: 'Regular price is required',
+                    valueAsNumber: true,
+                    min: {
+                      value: 0,
+                      message:
+                        'Regular price must be greater than or equal to 0',
+                    },
+                  })}
+                />
+
+                {errors.regular_price && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.regular_price.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* SALE PRICE */}
+              <div className="mt-2">
+                <Input
+                  type="number"
+                  label="Sale Price"
+                  placeholder="Enter sale price"
+                  min={0}
+                  step="0.01"
+                  {...register('sale_price', {
+                    valueAsNumber: true,
+                    validate: (value) => {
+                      if (value === undefined || value === null || value === '')
+                        return true;
+
+                      const regularPrice = Number(getValues('regular_price'));
+
+                      if (!regularPrice) {
+                        return 'Set regular price first';
+                      }
+
+                      return (
+                        value < regularPrice ||
+                        'Sale price must be less than regular price'
+                      );
+                    },
+                  })}
+                />
+
+                {errors.sale_price && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.sale_price.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* STOCK PRODUCT */}
+              <div className="mt-2">
+                <Input
+                  type="number"
+                  label="Stock Product *"
+                  placeholder="Enter stock quantity"
+                  min={0}
+                  max={1000}
+                  step={1}
+                  {...register('stock', {
+                    required: 'Stock is required',
+                    valueAsNumber: true,
+                    min: {
+                      value: 0,
+                      message: 'Stock must be at least 0',
+                    },
+                    max: {
+                      value: 1000,
+                      message: 'Stock must be less than or equal to 1000',
+                    },
+                    validate: (value) =>
+                      Number.isInteger(value) || 'Stock must be a whole number',
+                  })}
+                />
+
+                {errors.stock && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.stock.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* size selector */}
+              <div className="mt-2">
+                <SizeSelector control={control} errors={errors} />
+              </div>
+
+              {/* Selected discount */}
+              <div className="mt-3">
+                <label className="block font-semibold text-gray-300 mb-1">
+                  Selected Discount Code (Optional)
+                </label>
+              </div>
             </div>
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+            {isChanged && (
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                className="px-6 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition"
+              >
+                Save Draft
+              </button>
+            )}
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md"
+            >
+              {loading ? 'Creating...' : 'Create Product'}
+            </button>
           </div>
         </div>
       </div>

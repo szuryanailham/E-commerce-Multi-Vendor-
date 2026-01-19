@@ -73,7 +73,7 @@ Features that have been implemented or are in progress:
 - [x] Redis Rate Limiting
 - [x] Shared Error Handler Package
 - [x] Login & JWT Authentication
-- [ ] Role-Based Access Control (User / Seller / Admin)
+- [x] Role-Based Access Control (User / Seller)
 - [ ] Product & Order Services
 - [ ] Kafka Event Consumers
 - [ ] Payment Integration
@@ -91,6 +91,7 @@ Through this project, I gained hands-on experience with:
 - Implementing **event-driven architecture** with Kafka
 - Clean error handling & validation patterns
 - Best practices for Express + TypeScript
+- Creating Complex Form creating Product
 
 ---
 
