@@ -1,6 +1,11 @@
 import { Router } from 'express';
-import { getCategories } from '../controllers/product.controller';
-
+import {
+  createDiscountCodes,
+  deleteDiscountCode,
+  getCategories,
+  getDiscountCodes,
+} from '../controllers/product.controller';
+import isAuthenicated from '@e-commerce-multi-vendor/middleware';
 const router = Router();
 
 /**
@@ -33,4 +38,7 @@ const router = Router();
  */
 router.get('/get-categories', getCategories);
 
+router.post('/create-discount-code', isAuthenicated, createDiscountCodes);
+router.get('/get-discount-codes', isAuthenicated, getDiscountCodes);
+router.delete('/delete-discount-code/:id', isAuthenicated, deleteDiscountCode);
 export default router;
