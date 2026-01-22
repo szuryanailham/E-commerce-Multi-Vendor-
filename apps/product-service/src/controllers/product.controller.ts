@@ -4,6 +4,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '@e-commerce-multi-vendor/error-handler';
+import { imageKit } from '@e-commerce-multi-vendor/imagekit';
 
 // get Product Categories
 export const getCategories = async (
@@ -51,7 +52,8 @@ export const createDiscountCodes = async (
         ),
       );
     }
-    const discount_code = prisma.discount_codes.create({
+
+    const discount_code = await prisma.discount_codes.create({
       data: {
         public_name,
         discountType,
@@ -60,10 +62,11 @@ export const createDiscountCodes = async (
         sellerId: req.seller.id,
       },
     });
+
     return res.status(201).json({
       success: true,
       discount_code,
-      message: 'Discount code ready to be created',
+      message: 'Discount code successfully created',
     });
   } catch (error) {
     return next(error);
@@ -83,7 +86,6 @@ export const getDiscountCodes = async (
       },
     });
     return res.status(200).json({
-      success: true,
       discount_codes,
     });
   } catch (error) {
@@ -135,5 +137,48 @@ export const deleteDiscountCode = async (
     });
   } catch (error) {
     return next(error);
+  }
+};
+
+//  uploud product images
+export const uploadProductImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { fileName } = req.body;
+
+    const response = await imageKit.upload({
+      file: fileName,
+      fileName: `product-${Date.now()}.jpg`,
+      folder: '/products',
+    });
+
+    res.status(201).json({
+      file_url: response.url,
+      fileId: response.fileId,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// delete product images
+
+export const deleteProductImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+  } catch (error) {
+    const { fileId } = req.body;
+
+    const response = await imageKit.deleteFile(fileId);
+    res.status(201).json({
+      success: true,
+      response,
+    });
   }
 };

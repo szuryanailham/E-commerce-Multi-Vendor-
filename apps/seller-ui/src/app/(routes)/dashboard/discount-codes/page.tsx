@@ -1,15 +1,19 @@
 'use client';
 import Input from '@/shared/components/components-ui/Input';
+import DeleteDiscountModal from '@/shared/components/modal/delete.discount-codes';
 import axiosInstance from '@/utils/axiosInstance';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { ChevronRight, Plus, Trash, X } from 'lucide-react';
 import Link from 'next/link';
-import React, { use } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
 const page = () => {
-  const [showModal, setShowModal] = React.useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] = useState<any>();
   const queryClient = useQueryClient();
   const {
     register,
@@ -45,14 +49,28 @@ const page = () => {
   });
 
   const handleDeleteClick = async (discount: any) => {
-    console.log('Delete discount code:', discount);
+    setSelectedDiscount(discount);
+    setShowDeleteModal(true);
   };
+
+  const deleteDiscountCodeMutation = useMutation({
+    mutationFn: async (discountId) => {
+      await axiosInstance.delete(
+        `/product/api/delete-discount-code/${discountId}`,
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shop-discounts'] });
+      setShowDeleteModal(false);
+    },
+  });
 
   const onSubmit = (data: any) => {
     if (discountCodes.length > 8) {
       toast.error('You can only create up to 8 discount codes.');
       return;
     }
+    createDiscountCodeMutation.mutate(data);
   };
   return (
     <div className="w-full min-h-screen p-8">
@@ -230,21 +248,43 @@ const page = () => {
 
               <button
                 type="submit"
+                disabled={createDiscountCodeMutation.isPending}
                 className="
-    mt-4 w-full
-    bg-blue-600 hover:bg-blue-700
-    text-white px-4 py-2
-    rounded-md font-semibold
-    flex items-center justify-center gap-2
-    transition
-  "
+                  mt-4 w-full
+                  bg-blue-600 hover:bg-blue-700
+                  text-white px-4 py-2
+                  rounded-md font-semibold
+                  flex items-center justify-center gap-2
+                  transition
+                "
               >
                 <Plus size={18} />
-                Create
+                {createDiscountCodeMutation?.isPending
+                  ? 'Creating...'
+                  : 'Create Discount'}
               </button>
+              {createDiscountCodeMutation.isError && (
+                <p className="text-red-500 text-sm mt-2">
+                  {(
+                    createDiscountCodeMutation.error as AxiosError<{
+                      message: string;
+                    }>
+                  )?.response?.data.message || 'Something went wrong.'}
+                </p>
+              )}
             </form>
           </div>
         </div>
+      )}
+
+      {showDeleteModal && selectedDiscount && (
+        <DeleteDiscountModal
+          discount={selectedDiscount}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={() =>
+            deleteDiscountCodeMutation.mutate(selectedDiscount?.id)
+          }
+        />
       )}
     </div>
   );

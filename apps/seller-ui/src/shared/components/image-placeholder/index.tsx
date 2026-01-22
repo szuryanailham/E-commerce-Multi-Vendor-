@@ -1,6 +1,6 @@
 import { Pencil, WandSparkles, X } from 'lucide-react';
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const ImagePlaceHolder = ({
   size,
@@ -28,6 +28,7 @@ const ImagePlaceHolder = ({
       onImageChange(file, index!);
     }
   };
+
   return (
     <div
       onClick={() => setOpenImageModal(true)}

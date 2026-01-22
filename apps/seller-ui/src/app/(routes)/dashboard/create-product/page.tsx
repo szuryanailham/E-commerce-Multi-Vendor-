@@ -11,6 +11,12 @@ import RichTextEditor from '@/shared/components/components-ui/rich-text-editor';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
 import SizeSelector from '@/shared/components/components-ui/size-selector';
+
+interface UploadedImage {
+  fileId: string;
+  file_url: string;
+}
+
 const Page = () => {
   const {
     register,
@@ -23,8 +29,8 @@ const Page = () => {
   } = useForm();
 
   const [openImageModal, setOpenImageModal] = useState(false);
-  const [isChanged, setIsChanged] = useState(true);
-  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [isChanged, setIsChanged] = useState(false);
+  const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
   const { data, isLoading, isError } = useQuery({
     queryKey: ['categories'],
@@ -40,6 +46,14 @@ const Page = () => {
     retry: 2,
   });
 
+  const { data: discountCodes = [], isLoading: discountLoading } = useQuery({
+    queryKey: ['shop-discounts'],
+    queryFn: async () => {
+      const res = await axiosInstance.get('/product/api/get-discount-codes');
+      return res?.data?.discount_codes || [];
+    },
+  });
+
   const categories = data?.categories || [];
   const subCategoriesData = data?.subCategories || {};
 
@@ -50,39 +64,65 @@ const Page = () => {
     return selectedCategory ? subCategoriesData[selectedCategory] || [] : [];
   }, [selectedCategory, subCategoriesData]);
 
-  console.log(subCategoriesData);
   const onSubmit = (data: any) => {
     console.log(data);
   };
 
-  const handleImageChange = (file: File | null, index: number) => {
-    const updatedImages = [...images];
-
-    updatedImages[index] = file;
-
-    if (index === images.length - 1 && images.length < 8) {
-      updatedImages.push(null);
-    }
-
-    setImages(updatedImages);
-
-    setValue('images', updatedImages);
+  const convertFiletoBase64 = (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => {
-      let updatedImages = [...prevImages];
-      if (index === -1) {
-        updatedImages[0] = null;
-      } else {
-        updatedImages.splice(index, 1);
+  const handleImageChange = async (file: File | null, index: number) => {
+    if (!file) return;
+    try {
+      const fileName = await convertFiletoBase64(file);
+      const response = await axiosInstance.post(
+        '/product/api/uploud-product-image',
+        { fileName },
+      );
+      const updateImages = [...images];
+      const uploadedImage: UploadedImage = {
+        fileId: response.data.fileId,
+        file_url: response.data.file_url,
+      };
+      updateImages[index] = uploadedImage;
+
+      if (index === images.length - 1 && updateImages.length < 8) {
+        updateImages.push(null);
       }
+
+      setImages(updateImages);
+      setValue('images', updateImages);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRemoveImage = async (index: number) => {
+    try {
+      const updatedImages = [...images];
+      const imageToDelete = updatedImages[index];
+      if (imageToDelete && typeof imageToDelete === 'object') {
+        await axiosInstance.delete('/product/api/delete-product-image', {
+          data: {
+            fileId: imageToDelete.fileId!,
+          },
+        });
+      }
+      updatedImages.splice(index, 1);
       if (!updatedImages.includes(null) && updatedImages.length < 8) {
         updatedImages.push(null);
       }
+      setImages(updatedImages);
       setValue('images', updatedImages);
-      return updatedImages;
-    });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSaveDraft = () => {
@@ -590,6 +630,37 @@ const Page = () => {
                 <label className="block font-semibold text-gray-300 mb-1">
                   Selected Discount Code (Optional)
                 </label>
+                {discountLoading ? (
+                  <p className="text-gray-400">Loading discount codes...</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {discountCodes?.map((code: any) => (
+                      <button
+                        key={code.id}
+                        type="button"
+                        className={`px-3 py-2 rounded-md text-sm font-semibold border ${
+                          watch('discountCodes')?.includes(code.id)
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700'
+                        }`}
+                        onClick={() => {
+                          const currentSelection = watch('discountCodes') || [];
+                          const updatedSelected = currentSelection.includes(
+                            code.id,
+                          )
+                            ? currentSelection.filter(
+                                (id: string) => id !== code.id,
+                              )
+                            : [...currentSelection, code.id];
+                          setValue('discountCodes', updatedSelected);
+                        }}
+                      >
+                        {code?.public_name} ({code.discountValue}
+                        {code.discountType === 'percentage' ? '%' : '$'})
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

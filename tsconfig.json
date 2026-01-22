@@ -32,6 +32,9 @@
     },
     {
       "path": "./apps/product-service"
+    },
+    {
+      "path": "./packages/imagekit"
     }
   ]
 }
