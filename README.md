@@ -51,7 +51,7 @@ This approach improves **scalability, maintainability, and fault isolation**.
 
 ## 🔐 Auth Service (Implemented)
 
-### Implemented Features
+## 🔐 Auth & Core Features
 
 - User Registration
 - Login & JWT Authentication
@@ -61,8 +61,12 @@ This approach improves **scalability, maintainability, and fault isolation**.
 - OTP Rate Limiting using Redis
 - Spam Protection for OTP Requests
 - Role-Based Access Control (User / Seller)
+- AI-Powered Image Enhancement for Product Upload
+  - Automatic image quality enhancement
+  - Optimized for e-commerce product images
+  - external store implementation with Imagekit
 - Centralized Error Handling (Reusable Package)
-- Swagger API Documentation
+- Swagger / OpenAPI Documentation
 
 ### OTP Verification Flow
 
