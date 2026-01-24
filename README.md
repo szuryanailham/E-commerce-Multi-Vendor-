@@ -1,6 +1,7 @@
 # 🛒 SAAS Multi-Vendor E-Commerce Platform
 
-A **SAAS Multi-Vendor E-Commerce** project built using **microservices architecture** to simulate a large-scale, high-traffic, and scalable e-commerce system. This project is developed as an **advanced backend engineering and system design learning project**.
+A **SAAS Multi-Vendor E-Commerce Platform** built with a **microservices architecture** to simulate a **large-scale, high-traffic, and scalable e-commerce system**.
+This project is developed as an **advanced backend engineering & system design portfolio project**, focusing on real-world patterns used in production systems.
 
 ---
 
@@ -12,19 +13,20 @@ A **SAAS Multi-Vendor E-Commerce** project built using **microservices architect
 - **Express.js** (REST API)
 - **Nx Monorepo** (Microservices management)
 - **Prisma ORM**
-- **MONGGO DB** (Main database)
+- **MongoDB** (Main database)
 - **Redis** (OTP, rate limiting, caching)
 - **Apache Kafka** (Event-driven communication)
 - **Docker** (Containerization)
 
 ### Frontend
 
-- **Next.js** (Planned / In Progress)
+- **Next.js** (In Progress)
 
 ### Dev & Tooling
 
 - Swagger / OpenAPI
 - JWT Authentication
+- Centralized Error Handling
 - Email Service (OTP Verification)
 - Rate Limiting & Security Middleware
 
@@ -32,52 +34,86 @@ A **SAAS Multi-Vendor E-Commerce** project built using **microservices architect
 
 ## 🧩 Architecture Overview
 
-This project uses a **Microservices Architecture** approach with:
+The system is built using a **Microservices Architecture** pattern:
 
 - **API Gateway** as the single entry point
-- Independent services (Auth, User, Order, Product, etc.)
-- Inter-service communication via **Kafka (event-driven)**
-- Shared packages (Prisma, Error Handler, Utils) managed using **Nx**
+- Independent services (Auth, Product, User, etc.)
+- **Event-driven communication** using **Kafka**
+- Shared internal packages (Prisma, Error Handler, Utils) managed via **Nx**
 
 ```
-Client → API Gateway → Microservices → Database / Redis / Kafka
+Client → API Gateway → Microservices → MongoDB / Redis / Kafka
 ```
+
+This approach improves **scalability, maintainability, and fault isolation**.
 
 ---
 
-## 🔐 Auth Service (Current Focus)
+## 🔐 Auth Service (Implemented)
 
-Features that have been implemented or are in progress:
+### Implemented Features
 
 - User Registration
+- Login & JWT Authentication
+- Refresh Token Rotation (Security Best Practice)
 - Email OTP Verification
+- OTP Cooldown & Expiration
 - OTP Rate Limiting using Redis
-- OTP Cooldown & Spam Protection
-- Centralized Error Handling
+- Spam Protection for OTP Requests
+- Role-Based Access Control (User / Seller)
+- Centralized Error Handling (Reusable Package)
 - Swagger API Documentation
 
-### OTP Flow
+### OTP Verification Flow
 
-1. User registration
-2. System checks rate limits & cooldown
-3. OTP is sent via email
+1. User registers
+2. System checks OTP rate limits & cooldown (Redis)
+3. OTP is generated and sent via email
 4. OTP is temporarily stored in Redis
-5. User verifies OTP
+5. User submits OTP for verification
+6. Account is activated after successful verification
+
+---
+
+## 🛍️ Product Service (Implemented)
+
+### Features
+
+- Product Creation (Seller Only)
+- Slug Uniqueness Validation
+- Rich Text Product Description
+- Product Images Handling
+- Product Categories & Subcategories
+- Product Variants (Colors & Sizes)
+- Stock & Pricing Management
+- Discount Code Support
+- Custom Specifications
+- Custom Properties (Dynamic Attributes)
+
+### Technical Highlights
+
+- Prisma relational handling with MongoDB
+- Strict schema validation
+- Defensive payload validation
+- Image relation creation using Prisma nested writes
+- Clean separation between request validation and persistence logic
 
 ---
 
 ## ⚙️ Features Roadmap
 
 - [x] User Registration
-- [x] OTP Email Verification
+- [x] Login & JWT Authentication
+- [x] Email OTP Verification
 - [x] Redis Rate Limiting
 - [x] Shared Error Handler Package
-- [x] Login & JWT Authentication
 - [x] Role-Based Access Control (User / Seller)
-- [ ] Product & Order Services
-- [ ] Kafka Event Consumers
+- [x] Product Service (Create Product)
+- [ ] Product Listing & Filtering
+- [ ] Order Service
+- [ ] Kafka Event Producers & Consumers
 - [ ] Payment Integration
-- [ ] Frontend Dashboard
+- [ ] Seller & Admin Dashboard (Frontend)
 
 ---
 
@@ -85,13 +121,14 @@ Features that have been implemented or are in progress:
 
 Through this project, I gained hands-on experience with:
 
-- Designing **scalable backend architectures**
-- Managing **Nx Monorepo** with multiple services
-- Handling **high request throughput** using Redis
-- Implementing **event-driven architecture** with Kafka
-- Clean error handling & validation patterns
-- Best practices for Express + TypeScript
-- Creating Complex Form creating Product
+- Designing **scalable microservices architectures**
+- Managing **Nx Monorepo** with shared packages
+- Implementing **Redis-based rate limiting & caching**
+- Handling **event-driven systems** using Kafka
+- Advanced **Prisma + MongoDB** schema modeling
+- Strict backend validation & error handling
+- Real-world product creation workflows
+- Building secure **authentication systems** with OTP
 
 ---
 
@@ -101,10 +138,13 @@ Through this project, I gained hands-on experience with:
 apps/
  ├─ api-gateway
  ├─ auth-service
+ ├─ product-service
 packages/
  ├─ prisma
  ├─ error-handler
- ├─ shared-utils
+ ├─ components
+ ├─ middleware
+ ├─ imageKit
 ```
 
 ---
