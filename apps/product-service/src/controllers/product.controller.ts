@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '@e-commerce-multi-vendor/prisma';
 import {
+  AuthError,
   NotFoundError,
   ValidationError,
 } from '@e-commerce-multi-vendor/error-handler';
@@ -180,5 +181,113 @@ export const deleteProductImage = async (
       success: true,
       response,
     });
+  }
+};
+
+// create product
+export const createProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const {
+      title,
+      short_description,
+      detail_description,
+      warranty,
+      custom_specification,
+      slug,
+      tags,
+      cash_on_delivery,
+      brand,
+      embed_url,
+      category,
+      colors = [],
+      sizes = [],
+      discountCodes = [],
+      stock,
+      sale_price,
+      regular_price,
+      subcategory,
+      custom_properties = {},
+      images = [],
+    } = req.body;
+
+    if (
+      !title ||
+      !slug ||
+      !short_description ||
+      !detail_description ||
+      !category ||
+      !subcategory ||
+      !sale_price ||
+      !regular_price ||
+      !stock ||
+      !tags ||
+      !images
+    ) {
+      return next(new ValidationError('Missing required fields'));
+    }
+
+    if (!req.seller?.id || !req.seller?.shop?.id) {
+      return next(new AuthError('Only seller can create products!'));
+    }
+
+    // ✅ SLUG CHECK
+    const slugChecking = await prisma.products.findUnique({
+      where: { slug },
+    });
+
+    if (slugChecking) {
+      return next(
+        new ValidationError('Slug already exists! Please use another slug.'),
+      );
+    }
+
+    const newProduct = await prisma.products.create({
+      data: {
+        title,
+        short_description,
+        detail_description,
+        warranty,
+        cashOnDelivery: cash_on_delivery,
+        slug,
+        tags: Array.isArray(tags) ? tags : tags.split(','),
+        brand,
+        video_url: embed_url,
+        category,
+        subCategory: subcategory,
+        colors: colors || [],
+        sizes: sizes || [],
+        stock: Number(stock),
+        sale_price: Number(sale_price),
+        regular_price: Number(regular_price),
+        discount_codes: discountCodes,
+        custom_specification: custom_specification || {},
+        custom_properties: custom_properties || {},
+        shop: {
+          connect: {
+            id: req.seller!.shop!.id,
+          },
+        },
+
+        images: {
+          create: images
+            .filter((img: any) => img && img.fileId && img.file_url)
+            .map((img: any) => ({
+              file_id: img.fileId,
+              url: img.file_url,
+            })),
+        },
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      product: newProduct,
+    });
+  } catch (error) {
+    next(error);
   }
 };

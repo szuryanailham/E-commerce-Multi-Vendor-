@@ -1,9 +1,9 @@
 'use client';
 import ImagePlaceHolder from '@/shared/components/image-placeholder';
-import { ChevronsRight } from 'lucide-react';
+import { ChevronsRight, Wand, X } from 'lucide-react';
 import CostumSpecifications from '@/shared/components/components-ui/costum-specifications';
 import CostumProperties from '@/shared/components/components-ui/costum-properties';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import Input from '@/shared/components/components-ui/Input';
 import ColorSelector from '@/shared/components/components-ui/color-selector';
@@ -11,6 +11,10 @@ import RichTextEditor from '@/shared/components/components-ui/rich-text-editor';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
 import SizeSelector from '@/shared/components/components-ui/size-selector';
+import Image from 'next/image';
+import { enhancements } from '@/utils/AI.enhancement';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 interface UploadedImage {
   fileId: string;
@@ -29,9 +33,14 @@ const Page = () => {
   } = useForm();
 
   const [openImageModal, setOpenImageModal] = useState(false);
-  const [isChanged, setIsChanged] = useState(false);
+  const [isChanged, setIsChanged] = useState(true);
+  const [pictureUploudingLoader, setPictureUploudingLoader] = useState(false);
   const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
+  const [selectedImage, setselectedImage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeEffect, setactiveEffect] = useState<string | null>(null);
+  const [processing, setprocessing] = useState(false);
+  const router = useRouter();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -64,8 +73,17 @@ const Page = () => {
     return selectedCategory ? subCategoriesData[selectedCategory] || [] : [];
   }, [selectedCategory, subCategoriesData]);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     console.log(data);
+    try {
+      setLoading(true);
+      await axiosInstance.post('/product/api/create-product', data);
+      router.push('/dashboard/all-products');
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const convertFiletoBase64 = (file: File) => {
@@ -79,17 +97,20 @@ const Page = () => {
 
   const handleImageChange = async (file: File | null, index: number) => {
     if (!file) return;
+    setPictureUploudingLoader(true);
     try {
       const fileName = await convertFiletoBase64(file);
       const response = await axiosInstance.post(
         '/product/api/uploud-product-image',
         { fileName },
       );
-      const updateImages = [...images];
+
       const uploadedImage: UploadedImage = {
         fileId: response.data.fileId,
         file_url: response.data.file_url,
       };
+
+      const updateImages = [...images];
       updateImages[index] = uploadedImage;
 
       if (index === images.length - 1 && updateImages.length < 8) {
@@ -100,6 +121,8 @@ const Page = () => {
       setValue('images', updateImages);
     } catch (error) {
       console.log(error);
+    } finally {
+      setPictureUploudingLoader(false);
     }
   };
 
@@ -123,6 +146,16 @@ const Page = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const applyTransformation = (transformation: string) => {
+    if (!selectedImage || processing) return;
+
+    setprocessing(true);
+    setactiveEffect(transformation);
+
+    const transformedUrl = `${selectedImage}?tr=${transformation}&t=${Date.now()}`;
+    setselectedImage(transformedUrl);
   };
 
   const handleSaveDraft = () => {
@@ -153,8 +186,11 @@ const Page = () => {
               setOpenImageModal={setOpenImageModal}
               size="765 * 850"
               small={false}
+              images={images}
+              pictureUploadingLoader={pictureUploudingLoader}
               index={0}
               onImageChange={handleImageChange}
+              setSelectedImage={setselectedImage}
               onRemove={handleRemoveImage}
             />
           )}
@@ -163,8 +199,11 @@ const Page = () => {
               <ImagePlaceHolder
                 setOpenImageModal={setOpenImageModal}
                 size="765 * 850"
+                images={images}
                 key={index}
+                pictureUploadingLoader={pictureUploudingLoader}
                 small
+                setSelectedImage={setselectedImage}
                 index={index + 1}
                 onImageChange={handleImageChange}
                 onRemove={handleRemoveImage}
@@ -175,7 +214,6 @@ const Page = () => {
 
         <div className="md:w-[65%]">
           <div className="w-full flex gap-6">
-            {/* product title Input */}
             <div className="w-2/4">
               <Input
                 label="Product Title"
@@ -188,7 +226,6 @@ const Page = () => {
                 </p>
               )}
 
-              {/* product description */}
               <div className="mt-2">
                 <Input
                   type="textarea"
@@ -196,7 +233,7 @@ const Page = () => {
                   cols={10}
                   label="Short Description * (Max 150 words)"
                   placeholder="Enter Product description for quick view"
-                  {...register('description', {
+                  {...register('short_description', {
                     required: 'Description is required',
                     validate: (value) => {
                       const wordCount = value.trim().split(/\s+/).length;
@@ -214,7 +251,6 @@ const Page = () => {
                 )}
               </div>
 
-              {/* product Tags */}
               <div className="mt-2">
                 <Input
                   label="Tags *"
@@ -230,7 +266,6 @@ const Page = () => {
                 )}
               </div>
 
-              {/* product Waranty */}
               <div className="mt-2">
                 <Input
                   label="Waranty"
@@ -247,7 +282,6 @@ const Page = () => {
                 )}
               </div>
 
-              {/* product slug */}
               <div className="mt-2">
                 <Input
                   type="text"
@@ -297,24 +331,22 @@ const Page = () => {
                 )}
               </div>
 
-              {/* product brand */}
               <div className="mt-2">
                 <Input
                   label="Brand"
                   placeholder="Apple"
-                  {...register('Brand', {
+                  {...register('brand', {
                     required: 'warranty is required',
                   })}
                 />
 
-                {errors.Brands && (
+                {errors.brand && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.Brands.message as string}
+                    {errors.brand.message as string}
                   </p>
                 )}
               </div>
 
-              {/* Color selector */}
               <div className="mt-2">
                 <ColorSelector control={control} errors={errors} />
               </div>
@@ -364,9 +396,8 @@ const Page = () => {
                 </select>
               </div>
             </div>
-            {/*Product categories  */}
+
             <div className="w-2/4">
-              {/* CATEGORY */}
               <label className="block font-semibold text-gray-300 mb-1">
                 Category *
               </label>
@@ -421,7 +452,6 @@ const Page = () => {
                 </p>
               )}
 
-              {/* SUBCATEGORY */}
               <div className="mt-2">
                 <label className="block font-semibold text-gray-300 mb-1">
                   Subcategory *
@@ -479,23 +509,23 @@ const Page = () => {
                 )}
               </div>
 
-              {/* Detail description */}
               <div className="mt-2 mb-6">
                 <Controller
-                  name="detailed_description"
+                  name="detail_description"
                   control={control}
                   rules={{
-                    required: 'Detailed description is required',
-                    validate: (value) => {
-                      const wordCount = value
+                    validate: (value = '') => {
+                      // Hilangkan tag HTML
+                      const plainText = value
                         .replace(/<[^>]+>/g, '')
-                        .trim()
-                        .split(/\s+/).length;
+                        .replace(/&nbsp;/g, ' ')
+                        .trim();
 
-                      return (
-                        wordCount >= 100 ||
-                        `Detailed description must be at least 100 words (Current: ${wordCount})`
-                      );
+                      if (!plainText) {
+                        return 'Detailed description is required';
+                      }
+
+                      return true;
                     },
                   }}
                   render={({ field }) => (
@@ -505,6 +535,12 @@ const Page = () => {
                     />
                   )}
                 />
+
+                {errors.detail_description && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.detail_description.message as string}
+                  </p>
+                )}
               </div>
 
               <div className="mt-2">
@@ -525,9 +561,13 @@ const Page = () => {
                     },
                   })}
                 />
+                {errors.embed_url && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.embed_url.message as string}
+                  </p>
+                )}
               </div>
-              {/* Regular price */}
-              {/* REGULAR PRICE */}
+
               <div className="mt-2">
                 <Input
                   type="number"
@@ -553,7 +593,6 @@ const Page = () => {
                 )}
               </div>
 
-              {/* SALE PRICE */}
               <div className="mt-2">
                 <Input
                   type="number"
@@ -588,7 +627,6 @@ const Page = () => {
                 )}
               </div>
 
-              {/* STOCK PRODUCT */}
               <div className="mt-2">
                 <Input
                   type="number"
@@ -620,12 +658,10 @@ const Page = () => {
                 )}
               </div>
 
-              {/* size selector */}
               <div className="mt-2">
                 <SizeSelector control={control} errors={errors} />
               </div>
 
-              {/* Selected discount */}
               <div className="mt-3">
                 <label className="block font-semibold text-gray-300 mb-1">
                   Selected Discount Code (Optional)
@@ -664,6 +700,74 @@ const Page = () => {
               </div>
             </div>
           </div>
+
+          {openImageModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+              <div className="bg-gray-800 p-6 rounded-lg w-[450px] text-white">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">
+                    Enhance Product Image
+                  </h2>
+                  <X
+                    size={20}
+                    className="cursor-pointer hover:text-red-400"
+                    onClick={() => setOpenImageModal(false)}
+                  />
+                </div>
+
+                {/* Image Container */}
+                <div className="relative w-full h-[250px] rounded-md overflow-hidden border-gray-600">
+                  <Image
+                    src={selectedImage}
+                    alt="product-image"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, 450px"
+                    onLoad={() => setprocessing(false)}
+                    onError={() => setprocessing(false)}
+                  />
+
+                  {processing && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 transition-opacity duration-200">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs text-white tracking-wide">
+                          Enhancing image...
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {selectedImage && (
+                  <div className="mt-4 space-y-2 ">
+                    <h3 className="text-white text-sm font-semibold">
+                      AI Enhancements
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 max-h-[250px] overflow-y-auto">
+                      {enhancements?.map(({ label, effect }) => (
+                        <button
+                          type="button"
+                          key={effect}
+                          className={`p-2 rounded-md flex items-center gap-2 ${
+                            activeEffect === effect
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-700 hover:bg-gray-600'
+                          }`}
+                          onClick={() => applyTransformation(effect)}
+                          disabled={processing}
+                        >
+                          <Wand size={18} />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 flex justify-end gap-3">
             {isChanged && (
               <button
