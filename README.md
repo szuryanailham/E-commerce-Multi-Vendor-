@@ -15,7 +15,7 @@ This project is developed as an **advanced backend engineering & system design p
 - **Prisma ORM**
 - **MongoDB** (Main database)
 - **Redis** (OTP, rate limiting, caching)
-- **Apache Kafka** (Event-driven communication)
+- **Apache Kafka** (Event-driven communication) --> in Progress
 - **Docker** (Containerization)
 
 ### Frontend
@@ -64,7 +64,7 @@ This approach improves **scalability, maintainability, and fault isolation**.
 - AI-Powered Image Enhancement for Product Upload
   - Automatic image quality enhancement
   - Optimized for e-commerce product images
-  - external store implementation with Imagekit
+  - ecternal store implementation with
 - Centralized Error Handling (Reusable Package)
 - Swagger / OpenAPI Documentation
 
