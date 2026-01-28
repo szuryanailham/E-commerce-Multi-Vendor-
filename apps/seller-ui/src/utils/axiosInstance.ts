@@ -1,70 +1,120 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
   withCredentials: true,
+  timeout: 10000,
 });
 
 let isRefreshing = false;
-let refreshSubsribers: (() => void)[] = [];
+let refreshSubscribers: (() => void)[] = [];
 
 // Handle logout and prevent infinite loops
 const handleLogout = () => {
-  if (window.location.pathname != '/login') {
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    localStorage.clear();
+    sessionStorage.clear();
     window.location.href = '/login';
   }
 };
 
-// Handle adding a new access token to queued request
-const subcribeTokenRefresh = (callback: () => void) => {
-  refreshSubsribers.push(callback);
+// Subscribe to token refresh
+const subscribeTokenRefresh = (callback: () => void) => {
+  refreshSubscribers.push(callback);
 };
 
-// Execute queue requests after refresh
+// Execute queued requests after refresh
 const onRefreshSuccess = () => {
-  refreshSubsribers.forEach((callback) => callback());
-  refreshSubsribers = [];
+  refreshSubscribers.forEach((callback) => callback());
+  refreshSubscribers = [];
 };
 
-// Handle API request
+// Request interceptor
 axiosInstance.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    // Optional: log requests in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 Request:', config.method?.toUpperCase(), config.url);
+    }
+    return config;
+  },
   (error) => Promise.reject(error),
 );
 
-// Handle expired tokens and refresh logic
+// Response interceptor - Handle expired tokens and refresh logic
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError<any>) => {
+    const originalRequest: any = error.config;
 
-    // prevents infinity retery loops
-    if (error.response?.status == 401 && !originalRequest._retry) {
+    // Log error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('❌ Response Error:', {
+        status: error.response?.status,
+        url: originalRequest?.url,
+        error: error.response?.data?.error,
+      });
+    }
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      (error.response?.data?.error === 'TOKEN_EXPIRED' ||
+        error.response?.data?.message?.toLowerCase().includes('expired'))
+    ) {
+      console.log('🔄 Access token expired, attempting refresh...');
+
       if (isRefreshing) {
+        console.log('⏳ Refresh in progress, queuing request...');
         return new Promise((resolve) => {
-          subcribeTokenRefresh(() => resolve(axiosInstance(originalRequest)));
+          subscribeTokenRefresh(() => {
+            console.log('✅ Retrying queued request');
+            resolve(axiosInstance(originalRequest));
+          });
         });
       }
+
       originalRequest._retry = true;
       isRefreshing = true;
+
       try {
+        console.log('🔑 Calling refresh token endpoint...');
         await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER}/auth/api/refresh-token`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/refresh-token`,
           {},
           { withCredentials: true },
         );
 
+        console.log('✅ Token refreshed successfully');
+
         isRefreshing = false;
         onRefreshSuccess();
-
         return axiosInstance(originalRequest);
-      } catch (error) {
+      } catch (refreshError: any) {
+        console.error('❌ Token refresh failed:', refreshError.response?.data);
+
         isRefreshing = false;
-        refreshSubsribers = [];
-        handleLogout();
-        return Promise.reject(error);
+        refreshSubscribers = [];
+
+        if (refreshError.response?.status === 401) {
+          console.log('🚪 Refresh token invalid, logging out...');
+          handleLogout();
+        }
+
+        return Promise.reject(refreshError);
       }
     }
+
+    if (
+      error.response?.status === 401 &&
+      originalRequest._retry &&
+      error.response?.data?.error !== 'TOKEN_EXPIRED'
+    ) {
+      console.log(
+        '❌ Authentication failed (not token expiry), redirecting to login...',
+      );
+      handleLogout();
+    }
+
     return Promise.reject(error);
   },
 );

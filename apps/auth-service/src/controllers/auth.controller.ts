@@ -14,7 +14,7 @@ import {
   AuthError,
   ValidationError,
 } from '@e-commerce-multi-vendor/error-handler';
-import jwt, { JsonWebTokenError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { setCookies } from '../utils/cookies/setCookies';
 import Stripe from 'stripe';
 
@@ -136,6 +136,11 @@ export const loginUser = async (
       },
     );
 
+    await prisma.users.update({
+      where: { id: user.id },
+      data: { refreshToken },
+    });
+
     // store the refresh and access in httponly secure cookie
     setCookies(res, 'refresh_token', refreshToken);
     setCookies(res, 'access_token', accessToken);
@@ -156,43 +161,55 @@ export const refreshToken = async (
   next: NextFunction,
 ) => {
   try {
-    const refreshToken =
-      req.cookies['refresh-token'] ||
+    const oldRefreshToken =
+      req.cookies['refresh_token'] ||
       req.cookies['seller-refresh-token'] ||
       req.headers.authorization?.split(' ')[1];
 
-    if (!refreshToken) {
-      throw new ValidationError('Unauthorized! No refresh token');
+    if (!oldRefreshToken) {
+      throw new AuthError('Unauthorized! No refresh token');
     }
+
     const decoded = jwt.verify(
-      refreshToken,
+      oldRefreshToken,
       process.env.REFRESH_TOKEN_SECRET as string,
     ) as { id: string; role: string };
 
     if (!decoded || !decoded.id || !decoded.role) {
-      return new JsonWebTokenError('Forbidden ! Invalid refresh token');
+      throw new AuthError('Forbidden! Invalid refresh token');
     }
 
     let account;
-    if (decoded.role == 'user') {
+    if (decoded.role === 'user') {
       account = await prisma.users.findUnique({
-        where: {
-          id: decoded.id,
-        },
+        where: { id: decoded.id },
       });
-    } else if (decoded.role == 'seller') {
+    } else if (decoded.role === 'seller') {
       account = await prisma.sellers.findUnique({
-        where: {
-          id: decoded.id,
-        },
-        include: {
-          shop: true,
-        },
+        where: { id: decoded.id },
+        include: { shop: true },
       });
     }
 
     if (!account) {
-      return new AuthError('Forbidden! User/Seller not found');
+      throw new AuthError('Forbidden! User/Seller not found');
+    }
+
+    // Validasi token reuse
+
+    if (account.refreshToken !== oldRefreshToken) {
+      if (decoded.role === 'user') {
+        await prisma.users.update({
+          where: { id: decoded.id },
+          data: { refreshToken: null },
+        });
+      } else {
+        await prisma.sellers.update({
+          where: { id: decoded.id },
+          data: { refreshToken: null },
+        });
+      }
+      throw new AuthError('Token reuse detected! Please login again');
     }
 
     const newAccessToken = jwt.sign(
@@ -201,21 +218,39 @@ export const refreshToken = async (
       { expiresIn: '15m' },
     );
 
+    const newRefreshToken = jwt.sign(
+      { id: decoded.id, role: decoded.role },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { expiresIn: '7d' },
+    );
+
     if (decoded.role === 'user') {
+      await prisma.users.update({
+        where: { id: decoded.id },
+        data: { refreshToken: newRefreshToken },
+      });
       setCookies(res, 'access_token', newAccessToken);
+      setCookies(res, 'refresh_token', newRefreshToken);
     } else if (decoded.role === 'seller') {
+      await prisma.sellers.update({
+        where: { id: decoded.id },
+        data: { refreshToken: newRefreshToken },
+      });
       setCookies(res, 'seller-access-token', newAccessToken);
+      setCookies(res, 'seller-refresh-token', newRefreshToken);
     }
 
     req.role = decoded.role;
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
+      message: 'Token refreshed successfully',
     });
   } catch (error) {
     return next(error);
   }
 };
 
+//
 // get logged in user
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -536,6 +571,11 @@ export const loginSeller = async (
       process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: '7d' },
     );
+
+    await prisma.sellers.update({
+      where: { id: seller.id },
+      data: { refreshToken },
+    });
 
     // store refresh token and access token
     setCookies(res, 'seller-refresh-token', refreshToken);

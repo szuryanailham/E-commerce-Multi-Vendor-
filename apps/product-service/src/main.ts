@@ -4,6 +4,7 @@ import { errorMiddleware } from '@e-commerce-multi-vendor/error-handler';
 import cookieParser from 'cookie-parser';
 import router from './routes/product.routes';
 import swaggerUi from 'swagger-ui-express';
+import './jobs/product-crone.job';
 import { swaggerSpec } from './config/swaggerOptions';
 const port = process.env.PORT ? Number(process.env.PORT) : 6002;
 

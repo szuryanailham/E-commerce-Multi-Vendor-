@@ -3,9 +3,12 @@ import {
   createDiscountCodes,
   createProduct,
   deleteDiscountCode,
+  deleteProduct,
   deleteProductImage,
   getCategories,
   getDiscountCodes,
+  getShopProdcuts,
+  restoreProduct,
   uploadProductImage,
   // uploadProductImage,
 } from '../controllers/product.controller';
@@ -47,4 +50,8 @@ router.delete('/delete-discount-code/:id', isAuthenicated, deleteDiscountCode);
 router.post('/uploud-product-image', isAuthenicated, uploadProductImage);
 router.delete('/delete-product-image', isAuthenicated, deleteProductImage);
 router.post('/create-product', isAuthenicated, createProduct);
+router.get('/get-shop-products', isAuthenicated, getShopProdcuts);
+router.delete('/delete-product/:productId', isAuthenicated, deleteProduct);
+router.put('/restore-product/:productId', isAuthenicated, restoreProduct);
+
 export default router;
