@@ -28,7 +28,7 @@ model users {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")     // ⬅️ KUNCI KE COLLECTION users
+  @@map("users")     
 }
 
 model sellers {
@@ -48,7 +48,7 @@ model sellers {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("sellers")   // ⬅️ KUNCI KE COLLECTION sellers
+  @@map("sellers")   
 }
 
 model shops {

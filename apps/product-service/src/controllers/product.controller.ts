@@ -403,3 +403,5 @@ export const restoreProduct = async (
     next(error);
   }
 };
+
+// get All product
