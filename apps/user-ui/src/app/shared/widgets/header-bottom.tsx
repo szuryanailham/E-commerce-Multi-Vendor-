@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { AlignLeft, ChevronDown, HeartIcon, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ProfileIcon from '@/app/assets/svgs/profile-icon';
+import useUser from '@/hooks/useUser';
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
+  const { user, isLoading } = useUser();
   const [isSticky, setIsSticky] = useState(false);
   useEffect(() => {
     const handleScroll = () => {
@@ -74,11 +76,42 @@ const HeaderBottom = () => {
         <div>
           {isSticky && (
             <div className="flex items-center gap-8">
-              <Link href="/login" className="flex items-center gap-2">
-                <ProfileIcon className="w-6 h-6 text-gray-700" />
-                <span className="font-medium">Hello,</span>
-                <span className="font-semibold">Sign in</span>
-              </Link>
+              {isLoading ? (
+                // Loading State
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gray-200 rounded-full animate-pulse" />
+                  <div className="flex flex-col gap-1">
+                    <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+              ) : !isLoading && user ? (
+                // User Logged In
+                <Link href="/profile" className="flex items-center gap-2">
+                  <ProfileIcon className="w-6 h-6 text-gray-700" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-500">
+                      Hello,
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {user.name}
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                // Guest / Not Logged In
+                <Link href="/login" className="flex items-center gap-2">
+                  <ProfileIcon className="w-6 h-6 text-gray-700" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-500">
+                      Hello,
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      Sign in
+                    </span>
+                  </div>
+                </Link>
+              )}
 
               {/* Wishlist + Cart */}
               <div className="flex items-center gap-5">

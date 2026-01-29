@@ -3,7 +3,7 @@ import ImagePlaceHolder from '@/shared/components/image-placeholder';
 import { ChevronsRight, Wand, X } from 'lucide-react';
 import CostumSpecifications from '@/shared/components/components-ui/costum-specifications';
 import CostumProperties from '@/shared/components/components-ui/costum-properties';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import Input from '@/shared/components/components-ui/Input';
 import ColorSelector from '@/shared/components/components-ui/color-selector';

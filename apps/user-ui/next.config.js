@@ -15,6 +15,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'ik.imagekit.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+      },
     ],
   },
   nx: {},

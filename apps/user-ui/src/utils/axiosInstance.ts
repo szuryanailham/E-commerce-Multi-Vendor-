@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
 let isRefreshing = false;
 let refreshSubsribers: (() => void)[] = [];
 
-// Handle logout and prevent infinite loops
+// Handle logout and prevent infinite loops["user"]
 const handleLogout = () => {
   if (window.location.pathname != '/login') {
     window.location.href = '/login';
@@ -49,7 +49,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
       try {
         await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/refresh-token`,
+          `${process.env.NEXT_PUBLIC_SERVER}/auth/api/refresh-token`,
           {},
           { withCredentials: true },
         );

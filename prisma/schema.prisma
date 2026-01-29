@@ -173,6 +173,8 @@ model products {
 
   discount_codes         String[] @db.ObjectId
 
+  totalSales             Int @default(0)
+
   status                 productStatus @default(Active)
   deletedAt              DateTime?
 

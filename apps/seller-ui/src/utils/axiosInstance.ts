@@ -6,50 +6,24 @@ const axiosInstance = axios.create({
 });
 
 let isRefreshing = false;
-let refreshSubscribers: (() => void)[] = [];
+let refreshSubsribers: (() => void)[] = [];
 
 // Handle logout and prevent infinite loops
 const handleLogout = () => {
-  if (window.location.pathname !== '/login') {
-    // Clear any stored auth data
-    localStorage.removeItem('isAuthenticated');
-    sessionStorage.clear();
-
+  if (window.location.pathname != '/login') {
     window.location.href = '/login';
   }
 };
 
-// Check if user is authenticated
-export const checkAuth = async (): Promise<boolean> => {
-  try {
-    const response = await axiosInstance.get('/api/auth/check');
-    return response.status === 200;
-  } catch (error) {
-    return false;
-  }
-};
-
-// Redirect to login if not authenticated (for dashboard pages)
-export const requireAuth = async () => {
-  const isAuthenticated = await checkAuth();
-
-  if (!isAuthenticated) {
-    handleLogout();
-    return false;
-  }
-
-  return true;
-};
-
 // Handle adding a new access token to queued request
-const subscribeTokenRefresh = (callback: () => void) => {
-  refreshSubscribers.push(callback);
+const subcribeTokenRefresh = (callback: () => void) => {
+  refreshSubsribers.push(callback);
 };
 
 // Execute queue requests after refresh
 const onRefreshSuccess = () => {
-  refreshSubscribers.forEach((callback) => callback());
-  refreshSubscribers = [];
+  refreshSubsribers.forEach((callback) => callback());
+  refreshSubsribers = [];
 };
 
 // Handle API request
@@ -64,17 +38,15 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Prevents infinity retry loops
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // prevents infinity retery loops
+    if (error.response?.status == 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve) => {
-          subscribeTokenRefresh(() => resolve(axiosInstance(originalRequest)));
+          subcribeTokenRefresh(() => resolve(axiosInstance(originalRequest)));
         });
       }
-
       originalRequest._retry = true;
       isRefreshing = true;
-
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/refresh-token`,
@@ -88,12 +60,11 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (error) {
         isRefreshing = false;
-        refreshSubscribers = [];
+        refreshSubsribers = [];
         handleLogout();
         return Promise.reject(error);
       }
     }
-
     return Promise.reject(error);
   },
 );

@@ -405,3 +405,118 @@ export const restoreProduct = async (
 };
 
 // get All product
+// export const getAllProducts = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ) => {
+//   try {
+//     const page = parseInt(req.query.page as string) || 1;
+//     const limit = parseInt(req.query.limit as string) || 20;
+//     const skip = (page - 1) * limit;
+//     const type = req.query.type;
+
+//     const baseFilter = {
+//       OR: [
+//         {
+//           starting_date: null,
+//         },
+//         {
+//           ending_date: null,
+//         },
+//       ],
+//     };
+//     const orderBy =
+//       type === 'latest'
+//         ? { createdAt: 'desc' as const }
+//         : { totalSales: 'desc' as const };
+
+//     const [products, total, top10Products] = await Promise.all([
+//       prisma.products.findMany({
+//         skip,
+//         take: limit,
+//         include: {
+//           images: true,
+//           shop: true,
+//         },
+//         where: baseFilter,
+//         orderBy,
+//       }),
+
+//       prisma.products.count({ where: baseFilter }),
+
+//       prisma.products.findMany({
+//         take: 10,
+//         include: {
+//           images: true,
+//           shop: true,
+//         },
+//         where: baseFilter,
+//         orderBy,
+//       }),
+//     ]);
+
+//     res.status(200).json({
+//       products,
+//       top10Type: type === 'latest' ? 'latest' : 'topSales',
+//       top10Products,
+//       total,
+//       currentPage: page,
+//       totalPages: Math.ceil(total / limit),
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+    const type = req.query.type;
+
+    const orderBy =
+      type === 'latest'
+        ? { createdAt: 'desc' as const }
+        : { totalSales: 'desc' as const };
+
+    const [products, total, top10Products] = await Promise.all([
+      prisma.products.findMany({
+        skip,
+        take: limit,
+        include: {
+          images: true,
+          shop: true,
+        },
+        orderBy,
+      }),
+
+      prisma.products.count(),
+
+      prisma.products.findMany({
+        take: 10,
+        include: {
+          images: true,
+          shop: true,
+        },
+        orderBy,
+      }),
+    ]);
+
+    res.status(200).json({
+      products,
+      top10Type: type === 'latest' ? 'latest' : 'topSales',
+      top10Products,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

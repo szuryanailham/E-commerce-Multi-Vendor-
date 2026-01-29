@@ -10,12 +10,10 @@ const Header = () => {
   return (
     <div className="w-full bg-white">
       <div className="w-[80%] py-5 m-auto flex items-center justify-between gap-6">
-        {/* Logo */}
         <Link href="/">
           <span className="text-3xl font-[500] cursor-pointer">Eshop</span>
         </Link>
 
-        {/* Search */}
         <div className="w-[50%] relative">
           <input
             type="text"
@@ -29,7 +27,17 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-8">
-          {!isLoading && user ? (
+          {isLoading ? (
+            // Loading State
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gray-200 rounded-full animate-pulse" />
+              <div className="flex flex-col gap-1">
+                <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          ) : !isLoading && user ? (
+            // User Logged In
             <Link href="/profile" className="flex items-center gap-2">
               <ProfileIcon className="w-6 h-6 text-gray-700" />
               <div className="flex flex-col">
@@ -42,6 +50,7 @@ const Header = () => {
               </div>
             </Link>
           ) : (
+            // Guest / Not Logged In
             <Link href="/login" className="flex items-center gap-2">
               <ProfileIcon className="w-6 h-6 text-gray-700" />
               <div className="flex flex-col">
