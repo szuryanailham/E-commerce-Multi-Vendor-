@@ -8,7 +8,6 @@ const axiosInstance = axios.create({
 let isRefreshing = false;
 let refreshSubsribers: (() => void)[] = [];
 
-// Handle logout and prevent infinite loops
 const handleLogout = () => {
   if (window.location.pathname != '/login') {
     window.location.href = '/login';

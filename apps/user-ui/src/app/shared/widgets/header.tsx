@@ -1,12 +1,17 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, HeartIcon, ShoppingCart } from 'lucide-react';
 import ProfileIcon from '@/app/assets/svgs/profile-icon';
 import HeaderBottom from './header-bottom';
 import useUser from '@/hooks/useUser';
+import { userStore } from '@/app/store';
 const Header = () => {
   const { user, isLoading } = useUser();
+  const wishlist = userStore((state: any) => state.wishlist);
+  const cart = userStore((state: any) => state.cart);
+  // const [suggestions, setSuggestions] = useState<any[]>([]);
+  // const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   return (
     <div className="w-full bg-white">
       <div className="w-[80%] py-5 m-auto flex items-center justify-between gap-6">
