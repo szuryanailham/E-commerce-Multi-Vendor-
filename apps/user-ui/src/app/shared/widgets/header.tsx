@@ -75,7 +75,7 @@ const Header = () => {
             <Link href="/wishlist" className="relative">
               <HeartIcon className="w-6 h-6 text-gray-700" />
               <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
-                0
+                {wishlist?.length}
               </div>
             </Link>
 
@@ -83,7 +83,7 @@ const Header = () => {
             <Link href="/cart" className="relative">
               <ShoppingCart className="w-6 h-6 text-gray-700" />
               <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
-                0
+                {cart?.length}
               </div>
             </Link>
           </div>

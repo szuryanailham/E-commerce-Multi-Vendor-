@@ -10,7 +10,7 @@ import {
   refreshToken,
   resetUserPassword,
   sellerRegistration,
-  updateAccountNumber,
+  updateAccountNumber, 
   userForgotPassword,
   userRegistration,
   verifySeller,

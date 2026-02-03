@@ -6,11 +6,14 @@ import { AlignLeft, ChevronDown, HeartIcon, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ProfileIcon from '@/app/assets/svgs/profile-icon';
 import useUser from '@/hooks/useUser';
+import { userStore } from '@/app/store';
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const { user, isLoading } = useUser();
   const [isSticky, setIsSticky] = useState(false);
+  const wishlist = userStore((state: any) => state.wishlist);
+  const cart = userStore((state: any) => state.cart);
   useEffect(() => {
     const handleScroll = () => {
       setIsSticky(window.scrollY > 100);
@@ -119,7 +122,7 @@ const HeaderBottom = () => {
                 <Link href="/wishlist" className="relative">
                   <HeartIcon className="w-6 h-6 text-gray-700" />
                   <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
-                    0
+                    {wishlist?.length}
                   </div>
                 </Link>
 
@@ -127,7 +130,7 @@ const HeaderBottom = () => {
                 <Link href="/cart" className="relative">
                   <ShoppingCart className="w-6 h-6 text-gray-700" />
                   <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
-                    0
+                    {cart?.length}
                   </div>
                 </Link>
               </div>

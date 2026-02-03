@@ -124,7 +124,7 @@ export const loginUser = async (
       { id: user.id, role: 'user' },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
-        expiresIn: '15m',
+        expiresIn: '30s',
       },
     );
 
@@ -147,6 +147,8 @@ export const loginUser = async (
 
     res.status(200).json({
       message: 'Login successfull!',
+      accessTokenToken: accessToken,
+      refresh_token: refreshToken,
       user: { id: user.id, email: user.email, name: user.name },
     });
   } catch (error) {

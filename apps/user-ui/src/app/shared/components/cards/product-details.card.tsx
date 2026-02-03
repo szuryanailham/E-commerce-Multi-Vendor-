@@ -11,6 +11,10 @@ import {
   Truck,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { userStore } from '@/app/store';
+import useUser from '@/hooks/useUser';
+import useLocationTracking from '@/hooks/userLocationTracking';
+import useDeviceTracking from '@/hooks/useDeviceTracking';
 
 const ProductDetailsCard = ({
   data,
@@ -19,13 +23,24 @@ const ProductDetailsCard = ({
   data: any;
   setOpen: (open: boolean) => void;
 }) => {
+  const addToCart = userStore((state: any) => state.addToCart);
+  const cart = userStore((state: any) => state.cart);
+  const isInCart = cart.some((item: any) => item.id === data.id);
+  const addToWishList = userStore((state: any) => state.addToWishlist);
+  const removeFromWishlist = userStore(
+    (state: any) => state.removeFromWishlist,
+  );
+  const wishlist = userStore((state: any) => state.wishlist);
+  const isWishlisted = wishlist.some((item: any) => item.id === data.id);
+  const { user } = useUser();
+
+  const location = useLocationTracking();
+  const deviceInfo = useDeviceTracking();
+
   const [activeImage, setActiveImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-
   const router = useRouter();
 
   // Calculate estimated delivery (contoh: 3-7 hari dari sekarang)
@@ -53,59 +68,6 @@ const ProductDetailsCard = ({
   };
 
   const estimatedDelivery = getEstimatedDelivery();
-
-  // Handle Add to Cart
-  const handleAddToCart = async () => {
-    setIsAddingToCart(true);
-
-    // Validasi
-    if (data?.colors?.length > 0 && !selectedColor) {
-      alert('Silakan pilih warna terlebih dahulu');
-      setIsAddingToCart(false);
-      return;
-    }
-
-    if (data?.sizes?.length > 0 && !selectedSize) {
-      alert('Silakan pilih ukuran terlebih dahulu');
-      setIsAddingToCart(false);
-      return;
-    }
-
-    try {
-      // TODO: Implementasi API call untuk menambah ke cart
-      // const response = await addToCart({
-      //   productId: data.id,
-      //   quantity,
-      //   color: selectedColor,
-      //   size: selectedSize
-      // });
-
-      // Simulasi delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      alert('Produk berhasil ditambahkan ke keranjang!');
-      // Optional: redirect ke cart
-      // router.push('/cart');
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Gagal menambahkan ke keranjang');
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
-
-  // Handle Wishlist Toggle
-  const handleWishlistToggle = async () => {
-    try {
-      // TODO: Implementasi API call untuk toggle wishlist
-      // await toggleWishlist(data.id);
-
-      setIsInWishlist(!isInWishlist);
-    } catch (error) {
-      console.error('Error toggling wishlist:', error);
-      alert('Gagal menambahkan ke wishlist');
-    }
-  };
 
   return (
     <div
@@ -136,19 +98,35 @@ const ProductDetailsCard = ({
 
               {/* Wishlist Button on Image */}
               <button
-                onClick={handleWishlistToggle}
+                onClick={() =>
+                  isWishlisted
+                    ? removeFromWishlist(data.id, user, location, deviceInfo)
+                    : addToWishList(
+                        {
+                          ...data,
+                          quantity,
+                          selectedOptions: {
+                            color: selectedColor,
+                            size: selectedSize,
+                          },
+                        },
+                        user,
+                        location,
+                        deviceInfo,
+                      )
+                }
                 className={`absolute top-3 right-3 p-2 rounded-full shadow-lg transition-all ${
-                  isInWishlist
+                  isWishlisted
                     ? 'bg-red-500 text-white'
                     : 'bg-white text-gray-600 hover:text-red-500'
                 }`}
                 aria-label={
-                  isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'
+                  isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'
                 }
               >
                 <Heart
                   size={20}
-                  fill={isInWishlist ? 'currentColor' : 'none'}
+                  fill={isWishlisted ? 'currentColor' : 'none'}
                 />
               </button>
             </div>
@@ -394,31 +372,68 @@ const ProductDetailsCard = ({
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               {/* Add to Cart Button */}
               <button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                disabled={isInCart}
+                onClick={() =>
+                  addToCart(
+                    {
+                      ...data,
+                      quantity,
+                      selectedOptions: {
+                        color: selectedColor,
+                        size: selectedSize,
+                      },
+                    },
+                    user,
+                    location,
+                    deviceInfo,
+                  )
+                }
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition
+                  ${
+                    isInCart
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gray-900 text-white hover:bg-gray-800 cursor-pointer'
+                  }
+                `}
               >
                 <ShoppingCart size={20} />
-                <span>
-                  {isAddingToCart ? 'Menambahkan...' : 'Tambah ke Keranjang'}
-                </span>
+                <span>{isInCart ? 'In Cart' : 'Add to Cart'}</span>
               </button>
 
               {/* Wishlist Button */}
               <button
-                onClick={handleWishlistToggle}
-                className={`px-6 py-3 rounded-lg border-2 transition font-medium flex items-center justify-center gap-2 ${
-                  isInWishlist
-                    ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100'
-                    : 'border-gray-300 hover:border-red-500 hover:text-red-500'
-                }`}
+                onClick={() =>
+                  isWishlisted
+                    ? removeFromWishlist(data.id, user, location, deviceInfo)
+                    : addToWishList(
+                        {
+                          ...data,
+                          quantity,
+                          selectedOptions: {
+                            color: selectedColor,
+                            size: selectedSize,
+                          },
+                        },
+                        user,
+                        location,
+                        deviceInfo,
+                      )
+                }
+                className={`px-4 py-2 rounded-lg border transition font-medium flex items-center gap-2 cursor-pointer
+                  ${
+                    isWishlisted
+                      ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-500'
+                  }
+                `}
               >
                 <Heart
                   size={20}
-                  fill={isInWishlist ? 'currentColor' : 'none'}
+                  className="transition"
+                  fill={isWishlisted ? 'currentColor' : 'none'}
                 />
                 <span className="hidden sm:inline">
-                  {isInWishlist ? 'Tersimpan' : 'Simpan'}
+                  {isWishlisted ? 'Tersimpan' : 'Simpan'}
                 </span>
               </button>
             </div>
